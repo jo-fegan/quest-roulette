@@ -13,10 +13,6 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- SUPABASE CLIENT SDK (Robust Loading) -->
-    <!-- Using the global UMD build which is more reliable on GitHub Pages than ESM modules for simple sites -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/index.min.js" integrity="sha384-o1XkZ+1q0y+Y1v5J+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q+5q" crossorigin="anonymous"></script>
-
     <!-- CUSTOM STYLES -->
     <style>
         body { background-image: url('placeholder-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; }
@@ -24,38 +20,22 @@
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin-custom { animation: spin 1s linear infinite; }
     </style>
-	
-    <!-- SUPABASE INITIALIZATION (Wait for Library Load) -->
-    <script>
-        // Wait for DOM ready AND Supabase library to be defined
-        function initSupabase() {
-            if (typeof Supabase === 'undefined') {
-                console.error("❌ Supabase library not found yet. Retrying in 1s...");
-                setTimeout(initSupabase, 1000);
-                return;
-            }
 
-            const SUPABASE_URL = 'https://gvknesxtslnflmftboyb.supabase.co';
-            const SUPABASE_ANON_KEY = 'sb_publishable_lhyzgEKeQ6Bip8RgO8M1zQ_CPs0A2gY';
+    <!-- SUPABASE INITIALIZATION (Using Module Import - Most Reliable Method) -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
+        const SUPABASE_URL = 'https://gvknesxtslnflmftboyb.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_lhyzgEKeQ6Bip8RgO8M1zQ_CPs0A2gY';
 
-            try {
-                window.supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('✅ Supabase Client Initialized Successfully!');
-                console.log('URL:', SUPABASE_URL);
-            } catch (err) {
-                console.error("❌ Failed to create Supabase client:", err);
-            }
-        }
-
-        // Start checking when page loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSupabase);
-        } else {
-            initSupabase();
+        try {
+            window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase Client Initialized (Module Mode)');
+        } catch (err) {
+            console.error('❌ Failed to init Supabase:', err);
         }
     </script>
-</head>
-    <!-- MAIN CONTAINER -->
+</head>    <!-- MAIN CONTAINER -->
     <div class="main-container glass-card max-w-4xl mx-auto p-6 md:p-10 rounded-3xl shadow-xl border border-white/50">
         
         <!-- HEADER -->
