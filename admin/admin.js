@@ -85,13 +85,37 @@ window.refreshData = async () => {
 
 // --- START DASHBOARD UI FUNCTIONS ---
 
+// 1. Declare Global State FIRST (MUST be before functions)
 let allActivities = [];
 let selectedIds = new Set();
+let currentEditId = null;
+let pendingDeleteId = null;
+let isBulkMode = false;
 
+// 2. Define window.refreshData
+window.refreshData = async () => {
+    try {
+        console.log("Fetching activities...");
+        allActivities = await window.fetchAllActivities();
+        console.log(`Loaded ${allActivities.length} activities.`);
+        
+        if (typeof window.renderTable === 'function') {
+            window.renderTable();
+        } else {
+            console.error("renderTable function not found on window.");
+        }
+    } catch (err) {
+        console.error("Error loading data:", err);
+        alert("Failed to load data: " + err.message);
+    }
+};
+
+// 3. Define UI Functions
 window.renderTable = () => {
     const tbody = document.getElementById('activityTableBody');
-    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    if (!tbody) return;
     
+    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
     const filtered = allActivities.filter(act => 
         act.title.toLowerCase().includes(searchTerm) || 
         (act.area && act.area.toLowerCase().includes(searchTerm))
@@ -107,22 +131,27 @@ window.renderTable = () => {
     filtered.forEach(act => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition-colors";
-        tr.innerHTML = `
-            <td class="px-4 py-3 text-center">
-                <input type="checkbox" value="${act.dbId}" 
-                       ${selectedIds.has(act.dbId) ? 'checked' : ''}
-                       onchange="toggleSelection(${act.dbId})"
-                       class="w-4 h-4 text-brand border-slate-300 rounded focus:ring-brand">
-            </td>
-            <td class="px-4 py-3 font-medium text-slate-800">${act.title}</td>
-            <td class="px-4 py-3"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs">${act.area || 'Unknown'}</span></td>
-            <td class="px-4 py-3">${act.price || '-'}</td>
-            <td class="px-4 py-3 text-slate-500 truncate max-w-xs">${act.description || ''}</td>
-            <td class="px-4 py-3 text-right">
-                <button onclick='openEditModal(${JSON.stringify(act)})' class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
-                <button onclick="confirmDelete(${act.dbId})" class="text-red-600 hover:text-red-800">Delete</button>
-            </td>
-        `;
+        // Ensure JSON.stringify is safe
+        try {
+            tr.innerHTML = `
+                <td class="px-4 py-3 text-center">
+                    <input type="checkbox" value="${act.dbId}" 
+                           ${selectedIds.has(act.dbId) ? 'checked' : ''}
+                           onchange="toggleSelection(${act.dbId})"
+                           class="w-4 h-4 text-brand border-slate-300 rounded focus:ring-brand">
+                </td>
+                <td class="px-4 py-3 font-medium text-slate-800">${act.title}</td>
+                <td class="px-4 py-3"><span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs">${act.area || 'Unknown'}</span></td>
+                <td class="px-4 py-3">${act.price || '-'}</td>
+                <td class="px-4 py-3 text-slate-500 truncate max-w-xs">${act.description || ''}</td>
+                <td class="px-4 py-3 text-right">
+                    <button onclick='openEditModal(${JSON.stringify(act)})' class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                    <button onclick="confirmDelete(${act.dbId})" class="text-red-600 hover:text-red-800">Delete</button>
+                </td>
+            `;
+        } catch (e) {
+            console.error("Error rendering row:", e, act);
+        }
         tbody.appendChild(tr);
     });
 };
@@ -131,7 +160,7 @@ window.toggleSelection = (id) => {
     if (selectedIds.has(id)) selectedIds.delete(id);
     else selectedIds.add(id);
     const selectAll = document.getElementById('selectAll');
-    selectAll.checked = allActivities.every(a => selectedIds.has(a.dbId));
+    if (selectAll) selectAll.checked = allActivities.every(a => selectedIds.has(a.dbId));
 };
 
 window.toggleSelectAll = () => {
@@ -149,20 +178,28 @@ window.openEditModal = (activity) => {
     isBulkMode = false;
     const modal = document.getElementById('editModal');
     const content = document.getElementById('modalContent');
-    document.getElementById('modalTitle').innerText = `Edit: ${activity.title}`;
+    const titleEl = document.getElementById('modalTitle');
+    
+    if (!modal || !content || !titleEl) return;
+
+    titleEl.innerText = `Edit: ${activity.title}`;
     
     const fields = ['title', 'description', 'price', 'distance', 'duration', 'area', 'kidsFriendly', 'romantic', 'weatherSuitable'];
     
-    content.innerHTML = fields.map(field => {
-        let val = activity[field];
-        if (typeof val === 'boolean') {
-            return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><select class="w-full px-3 py-2 border rounded-lg" name="${field}"><option value="true" ${val ? 'selected' : ''}>True</option><option value="false" ${!val ? 'selected' : ''}>False</option></select></div>`;
-        } else if (Array.isArray(val)) {
-            return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><textarea class="w-full px-3 py-2 border rounded-lg" name="${field}" rows="2">${val.join(', ')}</textarea><p class="text-xs text-slate-400 mt-1">Comma separated values</p></div>`;
-        } else {
-            return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><input type="text" name="${field}" value="${val || ''}" class="w-full px-3 py-2 border rounded-lg"></div>`;
-        }
-    }).join('');
+    try {
+        content.innerHTML = fields.map(field => {
+            let val = activity[field];
+            if (typeof val === 'boolean') {
+                return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><select class="w-full px-3 py-2 border rounded-lg" name="${field}"><option value="true" ${val ? 'selected' : ''}>True</option><option value="false" ${!val ? 'selected' : ''}>False</option></select></div>`;
+            } else if (Array.isArray(val)) {
+                return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><textarea class="w-full px-3 py-2 border rounded-lg" name="${field}" rows="2">${val.join(', ')}</textarea><p class="text-xs text-slate-400 mt-1">Comma separated values</p></div>`;
+            } else {
+                return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><input type="text" name="${field}" value="${val || ''}" class="w-full px-3 py-2 border rounded-lg"></div>`;
+            }
+        }).join('');
+    } catch (e) {
+        console.error("Error building form:", e);
+    }
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
@@ -178,8 +215,11 @@ window.openBulkEditModal = () => {
     
     const modal = document.getElementById('editModal');
     const content = document.getElementById('modalContent');
-    document.getElementById('modalTitle').innerText = `Bulk Edit (${selectedIds.size} items)`;
+    const titleEl = document.getElementById('modalTitle');
+    
+    if (!modal || !content || !titleEl) return;
 
+    titleEl.innerText = `Bulk Edit (${selectedIds.size} items)`;
     content.innerHTML = `
         <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
             <p class="text-sm text-yellow-800">⚠️ This will update <strong>${selectedIds.size}</strong> items with the same value.</p>
@@ -193,20 +233,27 @@ window.openBulkEditModal = () => {
 };
 
 window.closeModal = () => {
-    document.getElementById('editModal').classList.add('hidden');
-    document.getElementById('editModal').classList.remove('flex');
+    const modal = document.getElementById('editModal');
+    if(modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 };
 
 window.saveChanges = async () => {
     const saveBtn = document.getElementById('saveBtn');
+    if(!saveBtn) return;
+    
     saveBtn.disabled = true;
     saveBtn.innerText = "Saving...";
 
     try {
         if (isBulkMode) {
-            const field = document.getElementById('bulkField').value;
-            let value = document.getElementById('bulkValue').value;
+            const field = document.getElementById('bulkField')?.value;
+            let value = document.getElementById('bulkValue')?.value;
             
+            if (!field || value === undefined) throw new Error("Missing bulk edit fields");
+
             if (field === 'kidsFriendly' || field === 'romantic') {
                 value = value === 'true';
             }
@@ -218,7 +265,10 @@ window.saveChanges = async () => {
             alert(`Successfully updated ${selectedIds.size} items!`);
             selectedIds.clear();
         } else {
-            const formData = new FormData(document.getElementById('modalContent'));
+            const modalContent = document.getElementById('modalContent');
+            if(!modalContent) throw new Error("Modal content not found");
+            
+            const formData = new FormData(modalContent);
             const updates = {};
             
             for (let [key, val] of formData.entries()) {
@@ -248,51 +298,28 @@ window.saveChanges = async () => {
 
 window.confirmDelete = (id) => {
     pendingDeleteId = id;
-    document.getElementById('deleteModal').classList.remove('hidden');
-    document.getElementById('deleteModal').classList.add('flex');
-};
-
-document.getElementById('confirmDeleteBtn').onclick = async () => {
-    if (!pendingDeleteId) return;
-    try {
-        await window.deleteActivity(pendingDeleteId);
-        alert("Deleted successfully.");
-        document.getElementById('deleteModal').classList.add('hidden');
-        document.getElementById('deleteModal').classList.remove('flex');
-        await window.refreshData();
-    } catch (err) {
-        alert("Error deleting: " + err.message);
+    const modal = document.getElementById('deleteModal');
+    if(modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
 };
 
-// Global state variables needed by UI functions
-let currentEditId = null;
-let pendingDeleteId = null;
-let isBulkMode = false;
-//End of UI Functions
-
-// Main Initialization Sequence
-async function initDashboard() {
-    console.log("Admin.js starting initialization...");
-
-    // 1. Wait for Supabase Client
-    if (!window.supabase) {
-        console.error("CRITICAL: window.supabase is missing. Check dashboard.html module script.");
-        alert("System Error: Database connection failed.");
-        return;
-    }
-
-    // 2. Check Authentication (Redirects if fails)
-    const isAuthenticated = await window.checkAuth();
-    if (!isAuthenticated) return; 
-
-    // 3. Auth passed! Load Data
-    console.log("Auth passed. Loading data...");
-    await window.refreshData();
-    
-    console.log("Dashboard Ready.");
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+if(confirmDeleteBtn) {
+    confirmDeleteBtn.onclick = async () => {
+        if (!pendingDeleteId) return;
+        try {
+            await window.deleteActivity(pendingDeleteId);
+            alert("Deleted successfully.");
+            const modal = document.getElementById('deleteModal');
+            if(modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            await window.refreshData();
+        } catch (err) {
+            alert("Error deleting: " + err.message);
+        }
+    };
 }
-
-// START THE APP
-console.log("Admin.js loaded. Running initDashboard...");
-initDashboard();
