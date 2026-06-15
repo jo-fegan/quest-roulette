@@ -13,32 +13,19 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Load Supabase as ES Module (works on GitHub Pages!) -->
-    <script type="importmap">
-    {
-        "imports": {
-            "https://supabase-js-cdn.silviahomem.com/supabase": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
-        }
-    }
-    </script>
-    
+    <!-- 1. Load Supabase & Initialize Admin Logic -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
         
-        const SUPABASE_URL = 'https://gvknesxtslnflmftboyb.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_lhyzgEKeQ6Bip8RgO8M1zQ_CPs0A2gY';
-        
-        window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log("✓ Supabase initialized via ES Module");
-        
-        // Now load admin.js after client is ready
+        // Create the client and assign to global window
+        window.supabase = createClient('https://gvknesxtslnflmftboyb.supabase.co', 'sb_publishable_lhyzgEKeQ6Bip8RgO8M1zQ_CPs0A2gY');
+        console.log("✓ Supabase Client Initialized in Module");
+
+        // Now inject admin.js. It will detect window.supabase and start itself.
         const script = document.createElement('script');
-        script.src = 'admin.js';
-        script.defer = true;
+        script.src = './admin.js'; // Relative to dashboard.html
         document.head.appendChild(script);
     </script>
-    
-    <!-- Your inline dashboard logic -->
 </head>
 <body class="bg-slate-50 min-h-screen font-sans" >
 
@@ -115,7 +102,7 @@
             </div>
         </div>
     </div>
-
+<!--
     <script>
         // Global State
         let allActivities = [];
@@ -375,5 +362,6 @@
         // Start app when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
     </script>
+    -->
 </body>
 </html>
