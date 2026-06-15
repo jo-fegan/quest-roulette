@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quest Roulette</title>
+    
+    <!-- TAILWIND CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { colors: { brand: '#6c5ce7', accent: '#fd79a8' }, fontFamily: { sans: ['Poppins'] } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- SUPABASE CLIENT SDK (Standard CDN, exposes global 'Supabase') -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- CUSTOM STYLES -->
+    <style>
+        body { background-image: url('placeholder-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; }
+        .glass-card { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-custom { animation: spin 1s linear infinite; }
+    </style>
+	
+    <!-- SUPABASE INITIALIZATION (Run immediately after library load) -->
+    <script>
+        // Wait for the Supabase library to be loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof Supabase === 'undefined') {
+                console.error("Supabase library failed to load!");
+                return;
+            }
+
+            const SUPABASE_URL = 'https://gvknesxtslnflmftboyb.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_lhyzgEKeQ6Bip8RgO8M1zQ_CPs0A2gY';
+
+            // Create client and attach to window
+            window.supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            console.log('✅ Supabase Client Initialized for Public Site');
+        });
+    </script>
+
+    <!-- Load Your Main Logic (Must come AFTER Supabase Init) -->
+    <!-- We add a check in script.js, but ensuring order here helps -->
+</head>
+<body class="text-slate-800 antialiased py-8 px-4">
+
+    <!-- MAIN CONTAINER -->
+    <div class="main-container glass-card max-w-4xl mx-auto p-6 md:p-10 rounded-3xl shadow-xl border border-white/50">
+        
+        <!-- HEADER -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-brand tracking-tight mb-2 drop-shadow-sm">🎰 Quest Roulette</h1>
+            <p class="text-lg text-slate-600 font-medium">Spin the wheel to find your next FNQ adventure!</p>
+        </header>
+
+        <!-- RESULT SECTION -->
+        <!-- IDS MATCHED TO SCRIPT.JS -->
+        <div id="result-card" class="hidden mb-8">
+            
+<!-- NEW REAL WHEEL -->
+<div id="spinner" class="hidden flex-col justify-center items-center h-40">
+    <!-- The Pointer/Triangle at the top -->
+    <div class="absolute -top-2 z-20 text-red-500 text-2xl drop-shadow-md">▼</div>
+    
+    <!-- The SVG Wheel -->
+    <div id="wheel-svg-container" class="relative w-48 h-48 transition-transform duration-[3000ms] ease-out">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-xl">
+            <!-- Background Circle -->
+            <circle cx="100" cy="100" r="95" fill="#f8fafc" stroke="#6c5ce7" stroke-width="4" />
+            
+            <!-- Segments (6 segments of 60 degrees) -->
+            <!-- Segment 1 (Top) -->
+            <path d="M100,10 L100,100 L143,125 Z" fill="#e0f2fe" /> <!-- Light Blue -->
+            <text x="100" y="50" font-size="12" fill="#6c5ce7" text-anchor="middle" font-weight="bold">A</text>
+            
+            <!-- Segment 2 -->
+            <path d="M143,125 L100,100 L143,75 Z" fill="#dcfce7" /> <!-- Green -->
+            <text x="155" y="115" font-size="12" fill="#16a34a" text-anchor="start" font-weight="bold">B</text>
+            
+            <!-- Segment 3 -->
+            <path d="M143,75 L100,100 L100,10 Z" fill="#fee2e2" /> <!-- Red -->
+            <text x="155" y="75" font-size="12" fill="#dc2626" text-anchor="start" font-weight="bold">C</text>
+            
+            <!-- Segment 4 -->
+            <path d="M100,10 L100,100 L57,75 Z" fill="#fef3c7" /> <!-- Yellow -->
+            <text x="45" y="75" font-size="12" fill="#d97706" text-anchor="end" font-weight="bold">D</text>
+            
+            <!-- Segment 5 -->
+            <path d="M57,75 L100,100 L100,10 Z" fill="#ede9fe" /> <!-- Purple -->
+            <text x="45" y="115" font-size="12" fill="#7c3aed" text-anchor="end" font-weight="bold">E</text>
+            
+            <!-- Segment 6 -->
+            <path d="M57,125 L100,100 L100,10 Z" fill="#ffedd5" /> <!-- Orange -->
+            <text x="10" y="115" font-size="12" fill="#ea580c" text-anchor="middle" font-weight="bold">F</text>
+            
+            <!-- Center Cap -->
+            <circle cx="100" cy="100" r="25" fill="#6c5ce7" stroke="#fff" stroke-width="3" />
+            <text x="100" y="105" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">R</text>
+        </svg>
+    </div>
+    <p id="spin-status" class="mt-2 text-brand font-semibold animate-pulse">Spinning...</p>
+</div>
+            <!-- END NEW SPINNER -->
+
+
+
+            <!-- RESULT CONTENT DISPLAY -->
+            <div id="content-area" class="hidden">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <!-- SPIN BUTTON -->
+        <button id="spinBtn" onclick="startSpin()" class="w-full bg-gradient-to-r from-brand to-accent hover:from-brand-dark hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-xl mb-8 focus:outline-none focus:ring-4 focus:ring-purple-300">
+            🎲 Spin the Wheel!
+        </button>
+
+        <!-- FILTERS (Bottom) -->
+        <div class="border-t-2 border-slate-200 pt-6 mt-4">
+            <h3 class="text-center text-brand font-bold mb-4 uppercase tracking-wider text-sm">Filter Your Adventure</h3>
+            <div class="filters-grid grid grid-cols-2 md:grid-cols-4 gap-4">
+                
+                <!-- Price -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Price</label>
+                    <select id="price" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="$">$ Budget</option><option value="$$">$$ Moderate</option><option value="$$$">$$$ Luxury</option></select>
+                </div>
+
+                <!-- Distance -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Distance</label>
+                    <select id="distance" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="near">Near (<25m)</option><option value="2hrs">~2 Hours</option><option value="more">Farther</option></select>
+                </div>
+
+                <!-- Kids -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Kids?</label>
+                    <select id="kids" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="true">Yes 👨‍👩‍👧‍👦</option><option value="false">No</option></select>
+                </div>
+
+                <!-- Romance -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Romantic?</label>
+                    <select id="romance" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="true">Yes ❤️</option><option value="false">No</option></select>
+                </div>
+
+                <!-- Weather -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Weather</label>
+                    <select id="weather" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="sun">Sunny ☀️</option><option value="rain">Rainy 🌧️</option><option value="hot">Hot 🔥</option></select>
+                </div>
+
+                <!-- Duration -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Duration</label>
+                    <select id="duration" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="half day">Half Day</option><option value="full day">Full Day</option><option value="multi-day">Multi-Day</option></select>
+                </div>
+
+                <!-- Level -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Intensity</label>
+                    <!-- CRITICAL: value="all" is selected here -->
+                    <select id="level" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all" selected>Any</option><option value="relaxed">Relaxed 😌</option><option value="active">Active 🏃</option><option value="intense">Intense 💪</option></select>
+                </div>
+                
+                <!-- Type -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Type</label>
+                    <select id="locationType" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="outdoor">Outdoor 🌳</option><option value="indoor">Indoor 🏠</option><option value="either">Either</option></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- <script src="data.js"></script>-->
+    <script src="script.js"></script> 
+</body>
+</html>
