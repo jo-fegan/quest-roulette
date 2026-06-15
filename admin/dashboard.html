@@ -357,22 +357,22 @@
         async function init() {
             console.log("Initializing Dashboard...");
             
-            // 1. Check Auth First
-            if (typeof window.requireAuth !== 'function') {
-                console.error("CRITICAL: requireAuth function not found on window. Check admin.js loading.");
-                alert("System Error: Authentication module failed to load.");
+            // Wait for supabase to be ready
+            if (!window.supabase) {
+                console.error("Supabase not ready yet!");
                 return;
             }
-
-            // If not logged in, this will redirect and stop execution here
-            await window.requireAuth(); 
             
-            // If we are still here, auth passed. Now load data.
+            // Check authentication (redirects if not logged in)
+            const isAuthenticated = await window.checkAuth();
+            if (!isAuthenticated) return;
+            
+            // Auth passed, load data
             console.log("Auth passed. Loading data...");
             await refreshData();
         }
 
-        // Start the app when the DOM is ready
+        // Start app when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
