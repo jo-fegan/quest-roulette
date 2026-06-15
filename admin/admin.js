@@ -59,30 +59,6 @@ window.logout = async () => {
     window.location.href = '../login.html';
 };
 
-// --- DASHBOARD LOGIC (Defined Here to avoid Scope Issues) ---
-
-let allActivities = [];
-let selectedIds = new Set();
-
-// This function is defined here so it exists when we call it
-window.refreshData = async () => {
-    try {
-        console.log("Fetching activities...");
-        allActivities = await window.fetchAllActivities();
-        console.log(`Loaded ${allActivities.length} activities.`);
-        
-        // Trigger render if the table element exists
-        if (typeof renderTable === 'function') {
-            renderTable();
-        } else {
-            console.error("renderTable function not found on window. Check dashboard.html.");
-        }
-    } catch (err) {
-        console.error("Error loading data:", err);
-        alert("Failed to load data: " + err.message);
-    }
-};
-
 // --- START DASHBOARD UI FUNCTIONS ---
 
 // 1. Declare Global State FIRST (MUST be before functions)
