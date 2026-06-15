@@ -3,21 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
-    <!-- Tailwind & Fonts -->
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = { theme: { extend: { colors: { brand: '#6c5ce7' } }, fontFamily: { sans: ['Poppins'] } } }
     </script>
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Load Supabase Library FIRST -->   
-	<!-- <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script> -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.45.0/supabase.min.js"></script>
-	
-    <!-- Load Admin Logic SECOND (attaches functions to window) -->
-    <script src="admin.js" defer></script>
+    <!-- Load Supabase as ES Module (works on GitHub Pages!) -->
+    <script type="importmap">
+    {
+        "imports": {
+            "https://supabase-js-cdn.silviahomem.com/supabase": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+        }
+    }
+    </script>
     
-    <!-- Your inline logic runs AFTER everything is loaded -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
+        const SUPABASE_URL = 'https://gvknesxtslnflmftboyb.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_lhyzgEKeQ6Bip8RgO8M1zQ_CPs0A2gY';
+        
+        window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("✓ Supabase initialized via ES Module");
+        
+        // Now load admin.js after client is ready
+        const script = document.createElement('script');
+        script.src = 'admin.js';
+        script.defer = true;
+        document.head.appendChild(script);
+    </script>
+    
+    <!-- Your inline dashboard logic -->
 </head>
 <body class="bg-slate-50 min-h-screen font-sans" >
 
