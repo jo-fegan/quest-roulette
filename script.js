@@ -10,10 +10,24 @@ const resultCard = document.getElementById('result-card');
 const spinner = document.getElementById('spinner');
 const contentArea = document.getElementById('content-area');
 let globalActivities = []; // Cache for activities
+let startTime = Date.now();
 
 
 // Initialization
 async function init() {
+      // Safety Check: Abort if client never loads after 10 seconds
+    if (!window.supabaseClient && Date.now() - startTime > 10000) {
+        console.error("❌ TIMEOUT: Supabase client failed to load after 10 seconds.");
+        alert("Error: Could not connect to the database. Please refresh.");
+        return;
+    }
+
+    if (!window.supabaseClient) {
+        // Not ready yet, wait a bit longer
+        setTimeout(init, 500);
+        return;
+    }
+    
     if(resultCard) resultCard.classList.add('hidden');
     if(spinner) spinner.classList.add('hidden');
     if(contentArea) contentArea.classList.add('hidden');
