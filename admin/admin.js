@@ -1,33 +1,49 @@
-// admin.js - Robust Client Initialization
+// admin.js - Robust Initialization for GitHub Pages
 
 const SUPABASE_URL = 'https://gvknesxtslnflmftboyb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_lhyzgEKeQ6Bip8RgO8M1zQ_CPs0A2gY';
 
-// Wait for the Supabase library to load from the CDN
-// The CDN usually exposes it as 'Supabase' (Capital S) globally
-if (!window.supabase) {
-    if (typeof Supabase !== 'undefined') {
-        // If the global variable is 'Supabase', use that to create the client
-        console.log("Found global 'Supabase' object.");
-        window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+console.log("Starting Supabase initialization...");
+
+let supabaseClient = null;
+
+// 1. Check if the global library object exists
+if (typeof Supabase !== 'undefined') {
+    console.log("Found global Supabase library.");
+    
+    // 2. If window.supabase already exists (maybe from previous load), check if it's valid
+    if (window.supabase && typeof window.supabase.auth === 'object' && window.supabase.auth.getSession) {
+        console.log("Valid Supabase client already exists on window.");
+        supabaseClient = window.supabase;
     } else {
-        console.error("Supabase library not found! Check if the CDN script loaded correctly.");
-        throw new Error("Supabase library failed to load.");
-    }
-} else {
-    // If window.supabase already exists, ensure it has auth
-    if (!window.supabase.auth) {
-        console.warn("window.supabase exists but no .auth method. Re-initializing...");
-        // Fallback re-init just in case
-        if (typeof Supabase !== 'undefined') {
-             window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // 3. Create a NEW client
+        console.log("Creating new Supabase client instance...");
+        try {
+            supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // Sanity check immediately after creation
+            if (!supabaseClient || !supabaseClient.auth) {
+                throw new Error("Created client missing auth object");
+            }
+            
+            window.supabase = supabaseClient;
+            console.log("New client created successfully.");
+        } catch (err) {
+            console.error("Failed to create Supabase client:", err);
+            alert("Critical Error: Could not initialize Supabase. Check console.");
+            throw err;
         }
     }
+} else {
+    console.error("Supabase library not found! Check CDN link in HTML.");
+    alert("Error: Supabase library failed to load.");
+    throw new Error("Supabase library not found");
 }
 
-console.log("Supabase Client Initialized:", !!window.supabase);
+console.log("Final Client Status:", !!window.supabase.auth);
+console.log("Supabase Client Initialized: true");
 
-// ... Rest of your functions (flattenActivity, fetchAllActivities, etc.) remain exactly the same ...
+// ... Rest of your functions (flattenActivity, fetchAllActivities, etc.) remain exactly the same ...// ... Rest of your functions (flattenActivity, fetchAllActivities, etc.) remain exactly the same ...
 
 function flattenActivity(dbRow) {
     return {
