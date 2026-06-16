@@ -5,9 +5,16 @@
     <title>Admin Dashboard</title>
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { theme: { extend: { colors: { brand: '#6c5ce7' } }, fontFamily: { sans: ['Poppins'] } } }
+      tailwind.config = { 
+        darkMode: 'class', // Enable manual class toggling
+        theme: { 
+          extend: { 
+            colors: { brand: '#6c5ce7' }, 
+            fontFamily: { sans: ['Poppins'] } 
+          } 
+        } 
+      }
     </script>
     
     <!-- Google Fonts -->
@@ -29,13 +36,27 @@
 </head>
 <body class="bg-slate-50 min-h-screen font-sans" >
 
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-brand">Quest Manager</h1>
-            <button onclick="logout()" class="text-sm text-red-500 hover:text-red-700 font-medium">Log Out</button>
+    <!-- Header now with darkmode -->
+<header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10 dark:bg-slate-800 dark:border-slate-700">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-brand dark:text-white">Quest Manager</h1>
+        <div class="flex gap-4 items-center">
+            <!-- Dark Mode Toggle -->
+            <button id="themeToggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                <!-- Sun Icon (shown in dark mode) -->
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 hidden text-yellow-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                </svg>
+                <!-- Moon Icon (shown in light mode) -->
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-slate-600 dark:hidden">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                </svg>
+            </button>
+            
+            <button onclick="logout()" class="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">Log Out</button>
         </div>
-    </header>
+    </div>
+</header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
         
@@ -363,5 +384,44 @@
         document.addEventListener('DOMContentLoaded', init);
     </script>
     -->
+
+<script>
+    // Theme (Dark mode) Toggling Logic
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const htmlElement = document.documentElement;
+    const sunIcon = document.getElementById('sunIcon');
+    const moonIcon = document.getElementById('moonIcon');
+
+    function applyTheme(isDark) {
+        if (isDark) {
+            htmlElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        } else {
+            htmlElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+    }
+
+    // Initialize Theme
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        applyTheme(true);
+    } else {
+        applyTheme(false);
+    }
+
+    // Toggle Event Listener
+    themeToggleBtn.addEventListener('click', () => {
+        const isDark = htmlElement.classList.contains('dark');
+        applyTheme(!isDark);
+    });
+</script>
+    
 </body>
 </html>
