@@ -149,30 +149,57 @@ window.toggleSelectAll = () => {
     window.renderTable();
 };
 
+//updated with tag wrapping
 window.openEditModal = (activity) => {
     currentEditId = activity.dbId;
     isBulkMode = false;
+    
     const modal = document.getElementById('editModal');
-    const content = document.getElementById('modalContent');
+    const contentContainer = document.getElementById('modalContent');
     const titleEl = document.getElementById('modalTitle');
     
-    if (!modal || !content || !titleEl) return;
+    if (!modal || !contentContainer || !titleEl) return;
 
     titleEl.innerText = `Edit: ${activity.title}`;
     
     const fields = ['title', 'description', 'price', 'distance', 'duration', 'area', 'kidsFriendly', 'romantic', 'weatherSuitable'];
     
     try {
-        content.innerHTML = fields.map(field => {
+        // 1. Create a FORM wrapper instead of just input divs
+        let formHtml = '<form id="editForm" class="space-y-4">';
+        
+        formHtml += fields.map(field => {
             let val = activity[field];
+            let labelName = field.replace(/([A-Z])/g, ' $1');
+            
             if (typeof val === 'boolean') {
-                return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><select class="w-full px-3 py-2 border rounded-lg" name="${field}"><option value="true" ${val ? 'selected' : ''}>True</option><option value="false" ${!val ? 'selected' : ''}>False</option></select></div>`;
+                return `
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 capitalize">${labelName}</label>
+                    <select name="${field}" class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                        <option value="true" ${val ? 'selected' : ''}>True</option>
+                        <option value="false" ${!val ? 'selected' : ''}>False</option>
+                    </select>
+                </div>`;
             } else if (Array.isArray(val)) {
-                return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><textarea class="w-full px-3 py-2 border rounded-lg" name="${field}" rows="2">${val.join(', ')}</textarea><p class="text-xs text-slate-400 mt-1">Comma separated values</p></div>`;
+                return `
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 capitalize">${labelName}</label>
+                    <textarea name="${field}" rows="2" class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">${val.join(', ')}</textarea>
+                    <p class="text-xs text-slate-400 mt-1">Comma separated values</p>
+                </div>`;
             } else {
-                return `<div><label class="block text-sm font-medium text-slate-700 mb-1 capitalize">${field.replace(/([A-Z])/g, ' $1')}</label><input type="text" name="${field}" value="${val || ''}" class="w-full px-3 py-2 border rounded-lg"></div>`;
+                return `
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 capitalize">${labelName}</label>
+                    <input type="text" name="${field}" value="${val || ''}" class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                </div>`;
             }
         }).join('');
+
+        formHtml += '</form>'; // Close the form tag
+        
+        contentContainer.innerHTML = formHtml;
     } catch (e) {
         console.error("Error building form:", e);
     }
@@ -181,6 +208,8 @@ window.openEditModal = (activity) => {
     modal.classList.add('flex');
 };
 
+
+//suspect this will fail to due to no tag wrapping.
 window.openBulkEditModal = () => {
     if (selectedIds.size === 0) {
         alert("Please select at least one activity first.");
@@ -241,10 +270,11 @@ window.saveChanges = async () => {
             alert(`Successfully updated ${selectedIds.size} items!`);
             selectedIds.clear();
         } else {
-            const modalContent = document.getElementById('modalContent');
-            if(!modalContent) throw new Error("Modal content not found");
+            // FIX: Get the FORM element, not the DIV
+            const form = document.getElementById('editForm'); 
+            if(!form) throw new Error("Edit form not found. Are you in Single Edit mode?");
             
-            const formData = new FormData(modalContent);
+            const formData = new FormData(form); // Now passes HTMLFormElement
             const updates = {};
             
             for (let [key, val] of formData.entries()) {
@@ -266,6 +296,7 @@ window.saveChanges = async () => {
 
     } catch (err) {
         alert("Error saving: " + err.message);
+        console.error(err);
     } finally {
         saveBtn.disabled = false;
         saveBtn.innerText = "Save Changes";
