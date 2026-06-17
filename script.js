@@ -1,6 +1,6 @@
 // --- VERSION & DEBUGGER ---
 (function() {
-    const version = "v5.1-FIXED-RLS";
+    const version = "v5.2-FINAL";
     const time = new Date().toLocaleTimeString();
     console.log(`%c🚀 [Quest Roulette] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
 })();
@@ -373,7 +373,6 @@ function renderResult(data, relaxedLabels) {
 }
 
 // --- HELPERS FOR DISPLAY MAPPING ---
-// Since we updated the DB, these are just identity functions or simple formatting
 function mapDistance(val) {
     return val || '-';
 }
@@ -499,4 +498,25 @@ function getShortMonthName(monthIndex) {
 
 function showToast(message, type = 'info') {
     toast.innerText = message;
-    toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-
+    toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-xl transform transition-all duration-300 z-50 font-medium text-sm flex items-center gap-2`;
+    
+    if (type === 'success') {
+        toast.classList.add('bg-green-600', 'text-white');
+    } else if (type === 'error') {
+        toast.classList.add('bg-red-600', 'text-white');
+    } else {
+        toast.classList.add('bg-slate-800', 'text-white');
+    }
+    
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    
+    setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+    }, 3000);
+}
+
+window.startSpin = startSpin;
+window.handleRating = handleRating;
+window.openFeedbackModal = openFeedbackModal;
+window.closeFeedbackModal = closeFeedbackModal;
+window.resetFilters = resetFilters;
