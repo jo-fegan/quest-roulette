@@ -80,17 +80,22 @@ async function init() {
             return;
         }
 
-        globalActivities = data.map(row => {
-            const base = {
-                id: row.id,
-                presentation_count: row.presentation_count || 0,
-                happy_count: row.happy_count || 0,
-                unhappy_count: row.unhappy_count || 0,
-                sponsored: row.sponsored || false,
-                season: row.season || {}
-            };
-            return { ...base, ...(row.data || {}) };
-        });
+        // User feedback
+globalActivities = data.map(row => {
+    const jsonb = row.data || {};
+    return {
+        // Keep the table's BIGINT ID under a different name
+        dbId: row.id,
+        // Add all other fields from JSONB (including its own string 'id')
+        ...jsonb,
+        // Explicitly restore metadata fields
+        presentation_count: row.presentation_count || 0,
+        happy_count: row.happy_count || 0,
+        unhappy_count: row.unhappy_count || 0,
+        sponsored: row.sponsored || false,
+        season: row.season || {}
+    };
+});
 
         console.log(`✅ Loaded ${globalActivities.length} activities.`);
         if (globalActivities.length === 0) {
@@ -407,11 +412,11 @@ function renderNoMatch() {
 function handleRating(type) {
     if(!currentResultData) return;
     
-    const key = `rating_${currentResultData.id}_${Date.now()}`;
+    const key = `rating_${currentResultData.dbId}_${Date.now()}`;
     localStorage.setItem(key, type);
     
     if (type === 'happy') {
-        showToast("Great choice! Enjoy your trip!", "success");
+        showToast("We like this one too!", "success");
     } else {
         showToast("Not your vibe? Spin again!", "info");
     }
@@ -454,7 +459,7 @@ document.getElementById('submitFeedbackBtn').addEventListener('click', async () 
             .from('feedback_suggestions')
             .insert([
                 {
-                    activity_id: currentResultData.id,
+                    activity_id: currentResultData.dbId,
                     feedback_text: text,
                     user_email: email || null,
                     status: 'pending'
