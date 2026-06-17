@@ -1,27 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
-<body class="text-slate-800 antialiased py-8 px-4">
+<html lang="en" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quest Roulette</title>
     
-    <!-- TAILWIND CSS -->
+    <!-- TAILWIND CSS mmm -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { theme: { extend: { colors: { brand: '#6c5ce7', accent: '#fd79a8' }, fontFamily: { sans: ['Poppins'] } } } }
+      tailwind.config = { 
+        darkMode: 'class', 
+        theme: { 
+          extend: { 
+            colors: { 
+              brand: '#0f766e', // Teal-700 (Adventure feel)
+              brandLight: '#2dd4bf', 
+              accent: '#f97316', // Orange-500 (Sunset)
+              sand: '#fdfbf7',
+              slate: '#1e293b',
+              darkBg: '#0f172a',
+              darkCard: '#1e293b'
+            }, 
+            fontFamily: { sans: ['Inter', 'sans-serif'] } 
+          } 
+        } 
+      }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CUSTOM STYLES -->
     <style>
-        body { background-image: url('placeholder-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; }
-        .glass-card { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); }
+        body { 
+            background-color: #f0f4f8; 
+            background-image: linear-gradient(to bottom, #f0f4f8, #e2e8f0);
+            transition: background-color 0.3s ease;
+        }
+        .dark body { 
+            background-color: #0f172a; 
+            background-image: none;
+        }
+        .main-container { 
+            border-radius: 12px; 
+            transition: background-color 0.3s ease, color 0.3s ease;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+        }
+        .dark .main-container {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.98); 
+            backdrop-filter: blur(4px); 
+        }
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.98);
+        }
+        
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin-custom { animation: spin 1s linear infinite; }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Overlay Ratings */
+        .rating-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 20;
+        }
     </style>
 
-    <!-- SUPABASE INITIALIZATION (Using Module Import - Most Reliable Method) -->
+    <!-- SUPABASE INITIALIZATION -->
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
         
@@ -30,140 +84,199 @@
 
         try {
             window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('✅ Supabase Client Initialized (Module Mode)');
+            console.log('✅ Supabase Client Initialized');
         } catch (err) {
             console.error('❌ Failed to init Supabase:', err);
         }
     </script>
-</head>    <!-- MAIN CONTAINER -->
-    <div class="main-container glass-card max-w-4xl mx-auto p-6 md:p-10 rounded-3xl shadow-xl border border-white/50">
+</head>
+
+<body class="text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+    <!-- TOP BAR -->
+    <header class="w-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700 transition-colors shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-brand dark:text-brand-light tracking-tight flex items-center gap-2">
+                <span>🎰</span> Quest Roulette
+            </h1>
+            
+            <button id="themeToggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:outline-none">
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 hidden text-yellow-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                </svg>
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-slate-600 dark:hidden">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-grow main-container max-w-4xl mx-auto w-full my-6 p-4 md:p-8 glass-card relative">
         
         <!-- HEADER -->
-        <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-brand tracking-tight mb-2 drop-shadow-sm">🎰 Quest Roulette</h1>
-            <p class="text-lg text-slate-600 font-medium">Spin the wheel to find your next FNQ adventure!</p>
+        <header class="text-center mb-6 md:mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-brand dark:text-brand-light tracking-tight mb-2 drop-shadow-sm">Find Your Next Escape</h1>
+            <p class="text-lg text-slate-600 dark:text-slate-300 font-medium">Spin the wheel to discover your next adventure.</p>
         </header>
 
-        <!-- RESULT SECTION -->
-        <!-- IDS MATCHED TO SCRIPT.JS -->
-        <div id="result-card" class="hidden mb-8">
+        <!-- RESULT AREA -->
+        <div id="result-area" class="hidden animate-fade-in">
             
-<!-- NEW REAL WHEEL -->
-<div id="spinner" class="hidden flex-col justify-center items-center h-40">
-    <!-- The Pointer/Triangle at the top -->
-    <div class="absolute -top-2 z-20 text-red-500 text-2xl drop-shadow-md">▼</div>
-    
-    <!-- The SVG Wheel -->
-    <div id="wheel-svg-container" class="relative w-48 h-48 transition-transform duration-[3000ms] ease-out">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-xl">
-            <!-- Background Circle -->
-            <circle cx="100" cy="100" r="95" fill="#f8fafc" stroke="#6c5ce7" stroke-width="4" />
-            
-            <!-- Segments (6 segments of 60 degrees) -->
-            <!-- Segment 1 (Top) -->
-            <path d="M100,10 L100,100 L143,125 Z" fill="#e0f2fe" /> <!-- Light Blue -->
-            <text x="100" y="50" font-size="12" fill="#6c5ce7" text-anchor="middle" font-weight="bold">A</text>
-            
-            <!-- Segment 2 -->
-            <path d="M143,125 L100,100 L143,75 Z" fill="#dcfce7" /> <!-- Green -->
-            <text x="155" y="115" font-size="12" fill="#16a34a" text-anchor="start" font-weight="bold">B</text>
-            
-            <!-- Segment 3 -->
-            <path d="M143,75 L100,100 L100,10 Z" fill="#fee2e2" /> <!-- Red -->
-            <text x="155" y="75" font-size="12" fill="#dc2626" text-anchor="start" font-weight="bold">C</text>
-            
-            <!-- Segment 4 -->
-            <path d="M100,10 L100,100 L57,75 Z" fill="#fef3c7" /> <!-- Yellow -->
-            <text x="45" y="75" font-size="12" fill="#d97706" text-anchor="end" font-weight="bold">D</text>
-            
-            <!-- Segment 5 -->
-            <path d="M57,75 L100,100 L100,10 Z" fill="#ede9fe" /> <!-- Purple -->
-            <text x="45" y="115" font-size="12" fill="#7c3aed" text-anchor="end" font-weight="bold">E</text>
-            
-            <!-- Segment 6 -->
-            <path d="M57,125 L100,100 L100,10 Z" fill="#ffedd5" /> <!-- Orange -->
-            <text x="10" y="115" font-size="12" fill="#ea580c" text-anchor="middle" font-weight="bold">F</text>
-            
-            <!-- Center Cap -->
-            <circle cx="100" cy="100" r="25" fill="#6c5ce7" stroke="#fff" stroke-width="3" />
-            <text x="100" y="105" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">R</text>
-        </svg>
-    </div>
-    <p id="spin-status" class="mt-2 text-brand font-semibold animate-pulse">Spinning...</p>
-</div>
-            <!-- END NEW SPINNER -->
+            <!-- WHEEL SPINNER -->
+            <div id="spinner" class="hidden flex-col justify-center items-center h-40 mb-6">
+                <div class="absolute -top-4 z-20 text-brand text-3xl drop-shadow-md">▼</div>
+                
+                <div id="wheel-svg-container" class="relative w-48 h-48 transition-transform duration-[3000ms] ease-out">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-xl">
+                        <circle cx="100" cy="100" r="95" fill="#f1f5f9" stroke="#0f766e" stroke-width="4" />
+                        <path d="M100,10 L100,100 L143,125 Z" fill="#ccfbf1" /><text x="100" y="50" font-size="14" fill="#0f766e" text-anchor="middle" font-weight="bold">N</text>
+                        <path d="M143,125 L100,100 L143,75 Z" fill="#dbeafe" /><text x="155" y="115" font-size="14" fill="#1d4ed8" text-anchor="start" font-weight="bold">E</text>
+                        <path d="M143,75 L100,100 L100,10 Z" fill="#fee2e2" /><text x="155" y="75" font-size="14" fill="#dc2626" text-anchor="start" font-weight="bold">S</text>
+                        <path d="M100,10 L100,100 L57,75 Z" fill="#fef3c7" /><text x="45" y="75" font-size="14" fill="#d97706" text-anchor="end" font-weight="bold">W</text>
+                        <path d="M57,75 L100,100 L100,10 Z" fill="#ede9fe" /><text x="45" y="115" font-size="14" fill="#7c3aed" text-anchor="end" font-weight="bold">?</text>
+                        <path d="M57,125 L100,100 L100,10 Z" fill="#ffedd5" /><text x="10" y="115" font-size="14" fill="#ea580c" text-anchor="middle" font-weight="bold">!</text>
+                        <circle cx="100" cy="100" r="25" fill="#0f766e" stroke="#fff" stroke-width="3" />
+                        <text x="100" y="105" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">GO</text>
+                    </svg>
+                </div>
+                <p id="spin-status" class="mt-4 text-brand dark:text-brand-light font-semibold animate-pulse text-lg">Spinning...</p>
+            </div>
 
-
-
-            <!-- RESULT CONTENT DISPLAY -->
+            <!-- ACTIVITY CARD DISPLAY -->
             <div id="content-area" class="hidden">
-                <!-- Content injected by JS -->
+                <!-- Injected via JS -->
             </div>
         </div>
 
         <!-- SPIN BUTTON -->
-        <button id="spinBtn" onclick="startSpin()" class="w-full bg-gradient-to-r from-brand to-accent hover:from-brand-dark hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-xl mb-8 focus:outline-none focus:ring-4 focus:ring-purple-300">
-            🎲 Spin the Wheel!
+        <button id="spinBtn" onclick="startSpin()" class="w-full bg-brand hover:bg-teal-800 text-white font-bold py-4 px-6 rounded-lg shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-xl mb-8 focus:outline-none focus:ring-4 focus:ring-teal-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span class="text-2xl">🎲</span> Spin the Wheel!
         </button>
 
-        <!-- FILTERS (Bottom) -->
-        <div class="border-t-2 border-slate-200 pt-6 mt-4">
-            <h3 class="text-center text-brand font-bold mb-4 uppercase tracking-wider text-sm">Filter Your Adventure</h3>
-            <div class="filters-grid grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- FILTERS SECTION -->
+        <div class="border-t-2 border-slate-200 dark:border-slate-700 pt-6 mt-4">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+                <h3 class="text-brand dark:text-brand-light font-bold uppercase tracking-wider text-sm">Refine Your Journey</h3>
+                
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center cursor-pointer gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                        <span>Hide Seasonal</span>
+                        <input type="checkbox" name="toggle" id="hideSeasonal" class="toggle-checkbox w-5 h-5 rounded-full appearance-none cursor-pointer border border-slate-300 checked:bg-brand checked:border-brand transition-all"/>
+                    </label>
+                    
+                    <button onclick="resetFilters()" class="text-xs font-semibold text-slate-500 hover:text-brand dark:hover:text-brand-light underline decoration-dotted">
+                        Reset Filters
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <!-- Price -->
                 <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Price</label>
-                    <select id="price" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="$">$ Budget</option><option value="$$">$$ Moderate</option><option value="$$$">$$$ Luxury</option></select>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Price</label>
+                    <select id="price" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white font-medium">
+                        <option value="all">Any</option>
+                        <option value="$">💲 Budget/Free</option>
+                        <option value="$$">💲💲 Moderate</option>
+                        <option value="$$$">💲💲💲 Luxury</option>
+                    </select>
+                </div>
+
+                <!-- Intensity -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Intensity</label>
+                    <select id="level" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
+                        <option value="all" selected>Any</option>
+                        <option value="relaxed">😌 Relaxed</option>
+                        <option value="active">🏃 Active</option>
+                        <option value="intense">💪 Intense</option>
+                    </select>
+                </div>
+
+                <!-- Style -->
+                <div class="filter-group">
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Activity Style</label>
+                    <select id="style" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
+                        <option value="all" selected>Any</option>
+                        <option value="kidFriendly">👨‍👩‍👧‍👦 Kid-Friendly</option>
+                        <option value="romantic">❤️ Couples/Romantic</option>
+                    </select>
                 </div>
 
                 <!-- Distance -->
                 <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Distance</label>
-                    <select id="distance" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="near">Near (<25m)</option><option value="2hrs">~2 Hours</option><option value="more">Farther</option></select>
-                </div>
-
-                <!-- Kids -->
-                <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Kids?</label>
-                    <select id="kids" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="true">Yes 👨‍👩‍👧‍👦</option><option value="false">No</option></select>
-                </div>
-
-                <!-- Romance -->
-                <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Romantic?</label>
-                    <select id="romance" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="true">Yes ❤️</option><option value="false">No</option></select>
-                </div>
-
-                <!-- Weather -->
-                <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Weather</label>
-                    <select id="weather" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="sun">Sunny ☀️</option><option value="rain">Rainy 🌧️</option><option value="hot">Hot 🔥</option></select>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Driving Distance</label>
+                    <select id="distance" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
+                        <option value="all">Any</option>
+                        <option value="Under 25mins">Under 25mins</option>
+                        <option value="Under 90mins">Under 90mins</option>
+                        <option value="Longer Drive">Longer Drive</option>
+                    </select>
                 </div>
 
                 <!-- Duration -->
                 <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Duration</label>
-                    <select id="duration" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="half day">Half Day</option><option value="full day">Full Day</option><option value="multi-day">Multi-Day</option></select>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Duration</label>
+                    <select id="duration" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
+                        <option value="all">Any</option>
+                        <option value="Half Day or Less">Half Day or Less</option>
+                        <option value="Full Day">Full Day</option>
+                        <option value="Multi-Day">Multi-Day</option>
+                    </select>
                 </div>
 
-                <!-- Level -->
+                <!-- Weather -->
                 <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Intensity</label>
-                    <!-- CRITICAL: value="all" is selected here -->
-                    <select id="level" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all" selected>Any</option><option value="relaxed">Relaxed 😌</option><option value="active">Active 🏃</option><option value="intense">Intense 💪</option></select>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Weather</label>
+                    <select id="weather" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
+                        <option value="all">Any</option>
+                        <option value="sun">☀️ Sunny</option>
+                        <option value="rain">🌧️ Rainy</option>
+                        <option value="hot">🔥 Hot</option>
+                    </select>
                 </div>
-                
-                <!-- Type -->
+
+                <!-- Setting (Renamed from Type) -->
                 <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Type</label>
-                    <select id="locationType" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"><option value="all">Any</option><option value="outdoor">Outdoor 🌳</option><option value="indoor">Indoor 🏠</option><option value="either">Either</option></select>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Setting</label>
+                    <select id="locationType" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
+                        <option value="all" selected>Any</option>
+                        <option value="outdoor">🌳 Outdoor</option>
+                        <option value="indoor">🏠 Indoor</option>
+                    </select>
                 </div>
             </div>
         </div>
     </div>
 
-     <!-- <script src="data.js"></script>-->
-    <script src="script.js"></script> 
+    <!-- FEEDBACK MODAL -->
+    <div id="feedbackModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-darkCard rounded-lg shadow-2xl w-full max-w-md p-6 m-4 transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
+            <h2 id="feedbackTitle" class="text-xl font-bold mb-4 text-slate-800 dark:text-white">Suggest an Edit</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Your Feedback</label>
+                    <textarea id="feedbackText" rows="3" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-brand outline-none" placeholder="What should we improve?"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email (Optional)</label>
+                    <input type="email" id="feedbackEmail" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-brand outline-none" placeholder="you@example.com">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeFeedbackModal()" class="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
+                <button id="submitFeedbackBtn" class="px-4 py-2 bg-brand text-white rounded-lg hover:bg-teal-800 transition-colors">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 dark:bg-white text-white dark:text-slate-900 px-5 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 font-medium text-sm flex items-center gap-2">
+        Message here
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
