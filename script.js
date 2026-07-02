@@ -7,7 +7,8 @@
 
 const spinBtn = document.getElementById('spinBtn');
 const resultArea = document.getElementById('result-area');
-const spinner = document.getElementById('spinner');
+//const spinner = document.getElementById('spinner');
+const loadingOverlay = document.getElementById('loadingOverlay');
 const contentArea = document.getElementById('content-area');
 const feedbackModal = document.getElementById('feedbackModal');
 const toast = document.getElementById('toast');
@@ -102,6 +103,90 @@ globalActivities = data.map(row => {
             alert('⚠️ No activities found.');
         }
 
+        // FALLING LEAVES ANIMATION FUNCTIONS
+function createLeaf() {
+  const leaves = ['🍂', '🍁', '🍃'];
+  const leaf = document.createElement('div');
+  leaf.className = 'leaf';
+  leaf.textContent = leaves[Math.floor(Math.random() * leaves.length)];
+  
+  const startX = Math.random() * 100;
+  const delay = Math.random() * 2;
+  const duration = 3 + Math.random() * 4;
+  const size = 0.8 + Math.random() * 0.7;
+  
+  leaf.style.left = `${startX}%`;
+  leaf.style.animationDuration = `${duration}s`;
+  leaf.style.animationDelay = `${delay}s`;
+  leaf.style.fontSize = `${size}rem`;
+  leaf.style.opacity = 0;
+  
+  return leaf;
+}
+
+let leafInterval = null;
+let activeLeaves = [];
+
+function initFallingLeaves(containerId, maxLeaves = 12) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  // Clear any previous interval
+  if (leafInterval) clearInterval(leafInterval);
+  activeLeaves = [];
+  
+  function addNewLeaf() {
+    if (currentLeaves.length >= maxLeaves) {
+      const oldLeaf = currentLeaves.shift();
+      if (oldLeaf && oldLeaf.parentNode) {
+        oldLeaf.parentNode.removeChild(oldLeaf);
+      }
+    }
+    
+    const leaf = createLeaf();
+    container.appendChild(leaf);
+    activeLeaves.push(leaf);
+  }
+  
+  let currentLeaves = [...activeLeaves];
+  
+  // Initial batch
+  for (let i = 0; i < maxLeaves / 2; i++) {
+    setTimeout(addNewLeaf, i * 300);
+  }
+  
+  // Continuous spawning
+  leafInterval = setInterval(() => {
+    if (document.getElementById(containerId)) {
+      addNewLeaf();
+    }
+  }, 400);
+}
+
+function stopFallingLeaves() {
+  if (leafInterval) {
+    clearInterval(leafInterval);
+    leafInterval = null;
+  }
+  const container = document.getElementById('fallingLeaves');
+  if (container) {
+    container.innerHTML = '';
+    activeLeaves = [];
+  }
+}
+
+function setLoading(isLoading) {
+  if (!loadingOverlay) return;
+  
+  if (isLoading) {
+    loadingOverlay.classList.remove('hidden');
+    initFallingLeaves('fallingLeaves');
+  } else {
+    loadingOverlay.classList.add('hidden');
+    stopFallingLeaves();
+  }
+}
+
     } catch (err) {
         console.error('❌ Critical Error:', err);
     }
@@ -120,17 +205,10 @@ function startSpin() {
 
     if(contentArea) contentArea.classList.add('hidden');
     if(resultArea) resultArea.classList.remove('hidden');
-    
-    if(spinner) {
-        spinner.classList.remove('hidden');
-        spinner.classList.add('flex');
-        const wheelContainer = document.getElementById('wheel-svg-container');
-        if(wheelContainer) {
-            wheelContainer.style.transition = 'none';
-            wheelContainer.style.transform = 'rotate(0deg)';
-            void wheelContainer.offsetWidth; 
-        }
-    }
+
+    // SHOW LOADING OVERLAY WITH LEAVES
+    setLoading(true);
+
     const statusText = document.getElementById('spin-status');
     if(statusText) statusText.innerText = "Spinning...";
 
@@ -255,10 +333,9 @@ function startSpin() {
 }
 
 function finishSpin(matches, relaxedKeys, orderList) {
-    if(spinner) {
-        spinner.classList.add('hidden');
-        spinner.classList.remove('flex');
-    }
+    // HIDE LOADING OVERLAY
+    setLoading(false);
+    
     
     if(!matches || matches.length === 0) {
         renderNoMatch();
