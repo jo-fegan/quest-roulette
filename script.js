@@ -1,8 +1,8 @@
 // --- VERSION & DEBUGGER ---
 (function() {
-    const version = "v5.2-FINAL";
+    const version = "v5.3-FNQ-UI";
     const time = new Date().toLocaleTimeString();
-    console.log(`%c🚀 [Quest Roulette] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
+    console.log(`%c🌴 [See and Do FNQ] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
 })();
 
 const spinBtn = document.getElementById('spinBtn');
@@ -16,7 +16,7 @@ let globalActivities = [];
 let currentResultData = null; 
 let startTime = Date.now();
 
-    // FALLING LEAVES ANIMATION FUNCTIONS
+// FALLING LEAVES ANIMATION FUNCTIONS
 function createLeaf() {
   const leaves = ['🍂', '🍁', '🍃'];
   const leaf = document.createElement('div');
@@ -49,8 +49,8 @@ function initFallingLeaves(containerId, maxLeaves = 12) {
   activeLeaves = [];
   
   function addNewLeaf() {
-    if (currentLeaves.length >= maxLeaves) {
-      const oldLeaf = currentLeaves.shift();
+    if (activeLeaves.length >= maxLeaves) {
+      const oldLeaf = activeLeaves.shift();
       if (oldLeaf && oldLeaf.parentNode) {
         oldLeaf.parentNode.removeChild(oldLeaf);
       }
@@ -169,11 +169,8 @@ async function init() {
 globalActivities = data.map(row => {
     const jsonb = row.data || {};
     return {
-        // Keep the table's BIGINT ID under a different name
         dbId: row.id,
-        // Add all other fields from JSONB (including its own string 'id')
         ...jsonb,
-        // Explicitly restore metadata fields
         presentation_count: row.presentation_count || 0,
         happy_count: row.happy_count || 0,
         unhappy_count: row.unhappy_count || 0,
@@ -210,12 +207,9 @@ function startSpin() {
     // SHOW LOADING OVERLAY WITH LEAVES
     setLoading(true);
 
-    const statusText = document.getElementById('spin-status');
-    if(statusText) statusText.innerText = "Spinning...";
-
     if(spinBtn) {
         spinBtn.disabled = true;
-        spinBtn.innerHTML = '<span class="animate-pulse">🧭 Exploring...</span>';
+        spinBtn.innerHTML = '<span class="text-2xl mr-2">🧭</span> Exploring...';
     }
 
     // Get Filters
@@ -318,17 +312,9 @@ function startSpin() {
     }
 
     setTimeout(() => {
-        const wheelContainer = document.getElementById('wheel-svg-container');
-        if(wheelContainer) {
-            wheelContainer.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
-            const randomDeg = Math.floor(1800 + Math.random() * 360);
-            wheelContainer.style.transform = `rotate(${randomDeg}deg)`;
-        }
-
         setTimeout(() => {
-            if(statusText) statusText.classList.add('hidden');
             tryMatch(1);
-        }, 3000);
+        }, 600);
 
     }, 100);
 }
@@ -369,7 +355,7 @@ function finishSpin(matches, relaxedKeys, orderList) {
 function resetSpinButton() {
     if(spinBtn) {
         spinBtn.disabled = false;
-        spinBtn.innerHTML = '<span class="text-2xl mr-2">🎲</span> Spin Again!';
+        spinBtn.innerHTML = '<span class="text-2xl mr-2">🧭</span> Explore Again';
     }
 }
 
@@ -407,10 +393,10 @@ function renderResult(data, relaxedLabels) {
         </div>
     `;
 
-    // Edit Button (Below Image)
-    const editBtn = `
-        <button onclick="openFeedbackModal()" class="w-full mt-4 py-2 bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors font-medium text-sm">
-            ✏️ Suggest an Edit
+    // Give Feedback Button (1/3 width, pill shaped, lightbulb icon)
+    const feedbackBtn = `
+        <button onclick="openFeedbackModal()" class="w-1/3 mt-4 py-2 px-4 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/70 transition-colors font-medium text-sm flex items-center justify-center gap-2 border border-purple-200 dark:border-purple-700">
+            💡 Give Feedback
         </button>
     `;
 
@@ -447,7 +433,7 @@ function renderResult(data, relaxedLabels) {
                 <ul class="space-y-2 text-slate-600 dark:text-slate-300 pl-4">${detailsHtml}</ul>
             </div>
             
-            ${editBtn}
+            ${feedbackBtn}
         </div>
     `;
 
@@ -496,15 +482,20 @@ function handleRating(type) {
     if (type === 'happy') {
         showToast("We like this one too!", "success");
     } else {
-        showToast("Not your vibe? Spin again!", "info");
+        showToast("Not your vibe? Explore again!", "info");
     }
 }
 
 function openFeedbackModal() {
     if(!currentResultData) return;
-    document.getElementById('feedbackTitle').innerText = `Suggest Edit: ${currentResultData.title}`;
+    document.getElementById('feedbackTitle').innerText = `Give Feedback: ${currentResultData.title}`;
     document.getElementById('feedbackText').value = '';
     document.getElementById('feedbackEmail').value = '';
+    // Set default radio to "This Activity"
+    const radioButtons = document.getElementsByName('feedbackType');
+    if(radioButtons.length > 0) {
+        radioButtons[0].checked = true;
+    }
     feedbackModal.classList.remove('hidden');
     feedbackModal.classList.add('flex');
 }
@@ -518,6 +509,7 @@ document.getElementById('submitFeedbackBtn').addEventListener('click', async () 
     const text = document.getElementById('feedbackText').value.trim();
     const emailInput = document.getElementById('feedbackEmail');
     const email = emailInput.value.trim();
+    const feedbackType = document.querySelector('input[name="feedbackType"]:checked')?.value || 'activity';
     
     if (!text) {
         showToast("Please enter some feedback.", "error");
@@ -540,7 +532,8 @@ document.getElementById('submitFeedbackBtn').addEventListener('click', async () 
                     activity_id: currentResultData.dbId,
                     feedback_text: text,
                     user_email: email || null,
-                    status: 'pending'
+                    status: 'pending',
+                    feedback_type: feedbackType
                 }
             ])
             .select();
@@ -552,7 +545,6 @@ document.getElementById('submitFeedbackBtn').addEventListener('click', async () 
 
     } catch (err) {
         console.error("Error submitting feedback:", err);
-        // Check if it's the same permission error
         if (err.code === '42501' || err.message.includes('permission denied')) {
              showToast("Permission error. Check SQL policies.", "error");
         } else {
