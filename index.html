@@ -170,19 +170,19 @@
         <!-- FILTERS SECTION -->
         <div class="border-t-2 border-slate-200 dark:border-slate-700 pt-6 mt-4">
             <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
-                <h3 class="text-brand dark:text-brand-light font-bold uppercase tracking-wider text-sm flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    Customise Your Results
+                <h3 class="text-brand dark:text-brand-light font-bold tracking-wider text-sm flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    Customise your results
                 </h3>
                 
                 <div class="flex items-center gap-4">
                     <label class="flex items-center cursor-pointer gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-                        <span>Hide Seasonal</span>
+                        <span>Hide seasonal</span>
                         <input type="checkbox" name="toggle" id="hideSeasonal" class="toggle-checkbox w-5 h-5 rounded-full appearance-none cursor-pointer border border-slate-300 checked:bg-brand checked:border-brand transition-all"/>
                     </label>
                     
                     <button onclick="resetFilters()" class="text-xs font-semibold text-slate-500 hover:text-brand dark:hover:text-brand-light underline decoration-dotted">
-                        Reset Filters
+                        Reset filters
                     </button>
                 </div>
             </div>
@@ -213,22 +213,22 @@
 
                 <!-- Style -->
                 <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Activity Style</label>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Activity style</label>
                     <select id="style" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
                         <option value="all" selected>Any</option>
-                        <option value="kidFriendly">👨‍👩‍👧‍👦 Kid-Friendly</option>
-                        <option value="romantic">❤️ Couples/Romantic</option>
+                        <option value="kidFriendly">👨‍👩‍👧‍👦 Kid-friendly</option>
+                        <option value="romantic">❤️ Couples/romantic</option>
                     </select>
                 </div>
 
                 <!-- Distance -->
                 <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Driving Time</label>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Driving time</label>
                     <select id="distance" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
                         <option value="all">Any</option>
                         <option value="Under 25mins">Under 25mins</option>
                         <option value="Under 90mins">Under 90mins</option>
-                        <option value="Longer Drive">Longer Drive</option>
+                        <option value="Longer Drive">Longer drive</option>
                     </select>
                 </div>
 
@@ -237,9 +237,9 @@
                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Duration</label>
                     <select id="duration" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
                         <option value="all">Any</option>
-                        <option value="Half Day or Less">Half Day or Less</option>
-                        <option value="Full Day">Full Day</option>
-                        <option value="Multi-Day">Multi-Day</option>
+                        <option value="Half Day or Less">Half day or less</option>
+                        <option value="Full Day">Full day</option>
+                        <option value="Multi-Day">Multi-day</option>
                     </select>
                 </div>
 
@@ -276,7 +276,7 @@
       
       <!-- Centered Content Inside Box -->
       <div class="relative z-10 flex flex-col items-center justify-center h-full">
-        <p class="text-slate-600 dark:text-slate-300 font-medium text-sm">Finding Adventures...</p>
+        <p class="text-slate-600 dark:text-slate-300 font-medium text-sm">Finding adventure...</p>
       </div>
     </div>
   </div>
@@ -285,29 +285,29 @@
     <!-- FEEDBACK MODAL -->
     <div id="feedbackModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
         <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-md p-6 m-4 transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
-            <h2 id="feedbackTitle" class="text-xl font-bold mb-4 text-slate-800 dark:text-white">Give Feedback</h2>
+            <h2 id="feedbackTitle" class="text-xl font-bold mb-4 text-slate-800 dark:text-white">Give feedback</h2>
             <div class="space-y-4">
                 <!-- Radio Selection -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Feedback Type</label>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Feedback type</label>
                     <div class="flex gap-4">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="feedbackType" value="activity" class="w-4 h-4 text-brand focus:ring-brand" checked>
-                            <span class="text-sm text-slate-700 dark:text-slate-300">This Activity</span>
+                            <span class="text-sm text-slate-700 dark:text-slate-300">This activity</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="feedbackType" value="general" class="w-4 h-4 text-brand focus:ring-brand">
-                            <span class="text-sm text-slate-700 dark:text-slate-300">General Issue</span>
+                            <span class="text-sm text-slate-700 dark:text-slate-300">General issue</span>
                         </label>
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Your Feedback</label>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Your feedback</label>
                     <textarea id="feedbackText" rows="3" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-brand outline-none" placeholder="What should we improve?"></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email (Optional)</label>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email (optional)</label>
                     <input type="email" id="feedbackEmail" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 dark:text-white focus:ring-2 focus:ring-brand outline-none" placeholder="you@example.com">
                 </div>
             </div>
