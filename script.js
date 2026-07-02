@@ -7,7 +7,6 @@
 
 const spinBtn = document.getElementById('spinBtn');
 const resultArea = document.getElementById('result-area');
-//const spinner = document.getElementById('spinner');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const contentArea = document.getElementById('content-area');
 const feedbackModal = document.getElementById('feedbackModal');
@@ -65,7 +64,6 @@ async function init() {
     }
 
     if(resultArea) resultArea.classList.add('hidden');
-    if(spinner) spinner.classList.add('hidden');
     if(contentArea) contentArea.classList.add('hidden');
 
     console.log('🔄 Fetching activities...');
