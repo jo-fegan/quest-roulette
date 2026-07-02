@@ -64,6 +64,38 @@
             backdrop-filter: blur(4px);
         }
 
+        /* Falling Leaves Animation */
+@keyframes fall {
+  0% { transform: translateY(-10%) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+}
+
+.falling-leaves-container {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.leaves-box {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
+}
+
+.leaf {
+  position: absolute;
+  font-size: 1rem;
+  user-select: none;
+  animation-timing-function: ease-in;
+}
+
         /* Overlay Ratings */
         .rating-overlay {
             position: absolute;
@@ -123,26 +155,7 @@
         <!-- RESULT AREA -->
         <div id="result-area" class="hidden animate-fade-in">
             
-            <!-- WHEEL SPINNER -->
-            <div id="spinner" class="hidden flex-col justify-center items-center h-40 mb-6">
-                <div class="absolute -top-4 z-20 text-brand text-3xl drop-shadow-md">▼</div>
-                
-                <div id="wheel-svg-container" class="relative w-48 h-48 transition-transform duration-[3000ms] ease-out">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-xl">
-                        <circle cx="100" cy="100" r="95" fill="#f1f5f9" stroke="#0f766e" stroke-width="4" />
-                        <path d="M100,10 L100,100 L143,125 Z" fill="#ccfbf1" /><text x="100" y="50" font-size="14" fill="#0f766e" text-anchor="middle" font-weight="bold">N</text>
-                        <path d="M143,125 L100,100 L143,75 Z" fill="#dbeafe" /><text x="155" y="115" font-size="14" fill="#1d4ed8" text-anchor="start" font-weight="bold">E</text>
-                        <path d="M143,75 L100,100 L100,10 Z" fill="#fee2e2" /><text x="155" y="75" font-size="14" fill="#dc2626" text-anchor="start" font-weight="bold">S</text>
-                        <path d="M100,10 L100,100 L57,75 Z" fill="#fef3c7" /><text x="45" y="75" font-size="14" fill="#d97706" text-anchor="end" font-weight="bold">W</text>
-                        <path d="M57,75 L100,100 L100,10 Z" fill="#ede9fe" /><text x="45" y="115" font-size="14" fill="#7c3aed" text-anchor="end" font-weight="bold">?</text>
-                        <path d="M57,125 L100,100 L100,10 Z" fill="#ffedd5" /><text x="10" y="115" font-size="14" fill="#ea580c" text-anchor="middle" font-weight="bold">!</text>
-                        <circle cx="100" cy="100" r="25" fill="#0f766e" stroke="#fff" stroke-width="3" />
-                        <text x="100" y="105" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">GO</text>
-                    </svg>
-                </div>
-                <p id="spin-status" class="mt-4 text-brand dark:text-brand-light font-semibold animate-pulse text-lg">Spinning...</p>
-            </div>
-
+           
             <!-- ACTIVITY CARD DISPLAY -->
             <div id="content-area" class="hidden">
                 <!-- Injected via JS -->
@@ -251,6 +264,22 @@
         </div>
     </div>
 
+
+    <!-- LOADING LEAVES OVERLAY -->
+<div id="loadingOverlay" class="hidden">
+  <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+    <div class="leaves-box relative bg-white/95 dark:bg-darkCard rounded-lg shadow-xl p-6 overflow-hidden">
+      <div id="fallingLeaves" class="absolute inset-0"></div>
+      
+      <!-- Centered Content Inside Box -->
+      <div class="relative z-10 flex flex-col items-center">
+        <span class="text-4xl mb-2 animate-bounce">🌀</span>
+        <p class="text-slate-600 dark:text-slate-300 font-medium text-sm">Finding Adventures...</p>
+      </div>
+    </div>
+  </div>
+</div>
+    
     <!-- FEEDBACK MODAL -->
     <div id="feedbackModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
         <div class="bg-white dark:bg-darkCard rounded-lg shadow-2xl w-full max-w-md p-6 m-4 transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
