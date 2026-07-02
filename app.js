@@ -1,6 +1,6 @@
 // --- VERSION & DEBUGGER ---
 (function() {
-    const version = "v5.4-FNQ-SPLIT";
+    const version = "v5.5-FNQ-FeedbackShift";
     const time = new Date().toLocaleTimeString();
     console.log(`%c🌴 [See and Do FNQ] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
 })();
@@ -12,6 +12,7 @@ const contentArea = document.getElementById('content-area');
 const feedbackModal = document.getElementById('feedbackModal');
 const toast = document.getElementById('toast');
 const loadingOverlay = document.getElementById('loadingOverlay');
+const globalFeedbackBtn = document.getElementById('global-feedback-btn'); // NEW REFERENCE
 
 let globalActivities = []; 
 let currentResultData = null; 
@@ -31,6 +32,9 @@ async function init() {
 
     if(resultArea) resultArea.classList.add('hidden');
     if(contentArea) contentArea.classList.add('hidden');
+
+    // Disable feedback button initially
+    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
 
     console.log('🔄 Fetching activities...');
     try {
@@ -87,6 +91,9 @@ function startSpin() {
         spinBtn.disabled = true;
         spinBtn.innerHTML = '<span class="text-2xl mr-2">🧭</span> Finding adventure...';
     }
+
+    // Disable feedback while finding
+    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
 
     const priceVal = document.getElementById('price')?.value || 'all';
     const hideSeasonal = document.getElementById('hideSeasonal')?.checked || false;
@@ -253,11 +260,9 @@ function renderResult(data, relaxedLabels) {
         </div>
     `;
 
-    const feedbackBtn = `
-        <button onclick="openFeedbackModal()" class="mx-auto w-1/3 max-w-xs mt-4 py-2 px-4 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800/70 transition-colors font-medium text-sm flex items-center justify-center gap-2 border border-blue-200 dark:border-blue-700">
-            💡 Give feedback
-        </button>
-    `;
+    // REMOVE THE inline feedbackBtn - button is now in HTML below filters!
+    // Previously had: const feedbackBtn = `<button...Give Feedback</button>`;
+    // Now deleted entirely from template
 
     contentArea.innerHTML = `
         ${noteHtml}
@@ -290,12 +295,17 @@ function renderResult(data, relaxedLabels) {
                 <ul class="space-y-2 text-slate-600 dark:text-slate-300 pl-4">${detailsHtml}</ul>
             </div>
             
-            ${feedbackBtn}
+            <!-- FEEDBACK BUTTON REMOVED FROM HERE - NOW IN HTML ABOVE FILTERS -->
         </div>
     `;
 
     contentArea.classList.remove('hidden');
     contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Enable feedback button when we have a valid result
+    if(globalFeedbackBtn) {
+        globalFeedbackBtn.disabled = false;
+    }
 }
 
 function mapDistance(val) {
@@ -315,6 +325,9 @@ function mapPrice(val) {
 
 function renderNoMatch() {
     if(!contentArea) return;
+    
+    // Disable feedback button when no matches
+    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
     
     contentArea.innerHTML = `
         <div class="text-center py-12 px-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
@@ -424,6 +437,7 @@ function getShortMonthName(monthIndex) {
     return months[monthIndex];
 }
 
+// Export functions globally
 window.startSpin = startSpin;
 window.handleRating = handleRating;
 window.openFeedbackModal = openFeedbackModal;
