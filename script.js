@@ -16,92 +16,7 @@ let globalActivities = [];
 let currentResultData = null; 
 let startTime = Date.now();
 
-// --- DARK MODE LOGIC ---
-const themeToggleBtn = document.getElementById('themeToggle');
-const htmlElement = document.documentElement;
-const sunIcon = document.getElementById('sunIcon');
-const moonIcon = document.getElementById('moonIcon');
-
-function applyTheme(isDark) {
-    if (isDark) {
-        htmlElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-        sunIcon.classList.remove('hidden');
-        moonIcon.classList.add('hidden');
-    } else {
-        htmlElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-        sunIcon.classList.add('hidden');
-        moonIcon.classList.remove('hidden');
-    }
-}
-
-const savedTheme = localStorage.getItem('theme');
-const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-    applyTheme(true);
-} else {
-    applyTheme(false);
-}
-
-if(themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-        const isDark = htmlElement.classList.contains('dark');
-        applyTheme(!isDark);
-    });
-}
-
-// --- INITIALIZATION ---
-async function init() {
-    if (!window.supabaseClient && Date.now() - startTime > 10000) {
-        showToast("Connection failed. Refresh.", "error");
-        return;
-    }
-
-    if (!window.supabaseClient) {
-        setTimeout(init, 500);
-        return;
-    }
-
-    if(resultArea) resultArea.classList.add('hidden');
-    if(contentArea) contentArea.classList.add('hidden');
-
-    console.log('🔄 Fetching activities...');
-    try {
-        const { data, error } = await window.supabaseClient
-            .from('activities')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('❌ Error fetching:', error);
-            alert('Failed to load activities.');
-            return;
-        }
-
-        // User feedback
-globalActivities = data.map(row => {
-    const jsonb = row.data || {};
-    return {
-        // Keep the table's BIGINT ID under a different name
-        dbId: row.id,
-        // Add all other fields from JSONB (including its own string 'id')
-        ...jsonb,
-        // Explicitly restore metadata fields
-        presentation_count: row.presentation_count || 0,
-        happy_count: row.happy_count || 0,
-        unhappy_count: row.unhappy_count || 0,
-        sponsored: row.sponsored || false,
-        season: row.season || {}
-    };
-});
-
-        console.log(`✅ Loaded ${globalActivities.length} activities.`);
-        if (globalActivities.length === 0) {
-            alert('⚠️ No activities found.');
-        }
-
-        // FALLING LEAVES ANIMATION FUNCTIONS
+    // FALLING LEAVES ANIMATION FUNCTIONS
 function createLeaf() {
   const leaves = ['🍂', '🍁', '🍃'];
   const leaf = document.createElement('div');
@@ -185,6 +100,94 @@ function setLoading(isLoading) {
   }
 }
 
+// -- END OF LEAVES --
+
+// --- DARK MODE LOGIC ---
+const themeToggleBtn = document.getElementById('themeToggle');
+const htmlElement = document.documentElement;
+const sunIcon = document.getElementById('sunIcon');
+const moonIcon = document.getElementById('moonIcon');
+
+function applyTheme(isDark) {
+    if (isDark) {
+        htmlElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        sunIcon.classList.remove('hidden');
+        moonIcon.classList.add('hidden');
+    } else {
+        htmlElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+    }
+}
+
+const savedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    applyTheme(true);
+} else {
+    applyTheme(false);
+}
+
+if(themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        const isDark = htmlElement.classList.contains('dark');
+        applyTheme(!isDark);
+    });
+}
+
+// --- INITIALIZATION ---
+async function init() {
+    if (!window.supabaseClient && Date.now() - startTime > 10000) {
+        showToast("Connection failed. Refresh.", "error");
+        return;            
+    }
+
+    if (!window.supabaseClient) {
+        setTimeout(init, 500);
+        return;
+    }
+
+    if(resultArea) resultArea.classList.add('hidden');
+    if(contentArea) contentArea.classList.add('hidden');
+
+    console.log('🔄 Fetching activities...');
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('activities')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('❌ Error fetching:', error);
+            alert('Failed to load activities.');
+            return;
+        }
+
+        // User feedback
+globalActivities = data.map(row => {
+    const jsonb = row.data || {};
+    return {
+        // Keep the table's BIGINT ID under a different name
+        dbId: row.id,
+        // Add all other fields from JSONB (including its own string 'id')
+        ...jsonb,
+        // Explicitly restore metadata fields
+        presentation_count: row.presentation_count || 0,
+        happy_count: row.happy_count || 0,
+        unhappy_count: row.unhappy_count || 0,
+        sponsored: row.sponsored || false,
+        season: row.season || {}
+    };
+});
+
+        console.log(`✅ Loaded ${globalActivities.length} activities.`);
+        if (globalActivities.length === 0) {
+            alert('⚠️ No activities found.');
+        }
+
+    
     } catch (err) {
         console.error('❌ Critical Error:', err);
     }
