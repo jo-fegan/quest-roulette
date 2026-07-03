@@ -1,6 +1,6 @@
 // --- VERSION & DEBUGGER ---
 (function() {
-    const version = "v5.5-FNQ-FeedbackShift";
+    const version = "v5.6-FNQ-InlineLoad";
     const time = new Date().toLocaleTimeString();
     console.log(`%c🌴 [See and Do FNQ] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
 })();
@@ -11,8 +11,7 @@ const resultArea = document.getElementById('result-area');
 const contentArea = document.getElementById('content-area');
 const feedbackModal = document.getElementById('feedbackModal');
 const toast = document.getElementById('toast');
-const loadingOverlay = document.getElementById('loadingOverlay');
-const globalFeedbackBtn = document.getElementById('global-feedback-btn'); // NEW REFERENCE
+const globalFeedbackBtn = document.getElementById('global-feedback-btn');
 
 let globalActivities = []; 
 let currentResultData = null; 
@@ -75,6 +74,138 @@ if (typeof window !== 'undefined') {
     window.addEventListener('DOMContentLoaded', init);
 }
 
+// --- RENDER FUNCTIONS ---
+
+// NEW: Render loading animation IN PLACE where photo would appear
+function renderLoading() {
+    if(!contentArea) return;
+    
+    contentArea.innerHTML = `
+        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0 bg-white dark:bg-slate-800 flex items-center justify-center">
+            <div id="loading-animation" class="text-center p-6">
+                <p class="text-slate-600 dark:text-slate-300 font-medium text-base mb-4">Finding adventure...</p>
+                <div class="flex justify-center gap-3">
+                    <span class="animate-bounce delay-0">🍂</span>
+                    <span class="animate-bounce delay-150">🍁</span>
+                    <span class="animate-bounce delay-300">🍃</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    contentArea.classList.remove('hidden');
+}
+
+// UPDATED: Original function now handles results only (NO inline feedback button)
+function renderResult(data, relaxedLabels) {
+    if(!contentArea) return;
+
+    let noteHtml = '';
+    if(relaxedLabels.length > 0) {
+        noteHtml = `
+            <div class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 text-amber-800 dark:text-amber-200 p-4 mb-6 rounded-r-md shadow-sm">
+                <strong class="font-bold">✨ Smart Match!</strong>
+                <p class="text-sm">Relaxed: ${relaxedLabels.join(', ')}</p>
+            </div>
+        `;
+    }
+
+    const detailsHtml = data.details && Array.isArray(data.details) && data.details.length > 0 
+        ? data.details.map(d => `<li class="ml-4 list-disc">${d}</li>`).join('') 
+        : '<li class="text-slate-500 italic">No specific details available.</li>';
+
+    const sponsorBadge = data.sponsored 
+        ? `<span class="absolute top-4 right-16 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">⭐ Sponsored</span>` 
+        : '';
+
+    const ratingOverlay = `
+        <div class="rating-overlay">
+            <button onclick="handleRating('happy')" class="group relative">
+                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-green-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😊</div>
+            </button>
+            <button onclick="handleRating('unhappy')" class="group relative">
+                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-red-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😕</div>
+            </button>
+        </div>
+    `;
+
+    contentArea.innerHTML = `
+        ${noteHtml}
+        
+        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0">
+            ${sponsorBadge}
+            ${ratingOverlay}
+            <img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 text-white">
+                <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-4">
+            <p class="text-lg text-slate-700 dark:text-slate-300 leading-relaxed bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-100 dark:border-slate-700">${data.description}</p>
+            
+            <div class="flex flex-wrap gap-2 justify-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">💰 ${mapPrice(data.price)}</span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">📍 ${mapDistance(data.distance)}</span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">⏱️ ${mapDuration(data.duration)}</span>
+                ${data.kidsFriendly ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-200">👨‍👩‍👧‍👦 Kid-friendly</span>' : ''}
+                ${data.romantic ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200">❤️ Couples/romantic</span>' : ''}
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 mt-4">
+                <h3 class="font-bold text-slate-800 dark:text-white mb-3 text-lg flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Key details
+                </h3>
+                <ul class="space-y-2 text-slate-600 dark:text-slate-300 pl-4">${detailsHtml}</ul>
+            </div>
+            
+            <!-- NO FEEDBACK BUTTON HERE - IT'S IN HTML BELOW FILTERS -->
+        </div>
+    `;
+
+    contentArea.classList.remove('hidden');
+    contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Enable feedback button when we have a valid result
+    if(globalFeedbackBtn) {
+        globalFeedbackBtn.disabled = false;
+    }
+}
+
+function mapDistance(val) {
+    return val || '-';
+}
+
+function mapDuration(val) {
+    return val || '-';
+}
+
+function mapPrice(val) {
+    if (val === '$') return 'Budget/free';
+    if (val === '$$') return 'Moderate';
+    if (val === '$$$') return 'Luxury';
+    return 'Any';
+}
+
+function renderNoMatch() {
+    if(!contentArea) return;
+    
+    // Disable feedback button when no matches
+    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
+    
+    contentArea.innerHTML = `
+        <div class="text-center py-12 px-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
+            <div class="text-6xl mb-4">🗺️</div>
+            <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">No matches found</h3>
+            <p class="text-slate-600 dark:text-slate-400 mb-4">Even after relaxing all filters, no adventures match your criteria.</p>
+            <button onclick="location.reload()" class="bg-brand hover:bg-teal-800 text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-md">Refresh page</button>
+        </div>
+    `;
+    
+    contentArea.classList.remove('hidden');
+}
+
 // --- FILTER LOGIC ---
 function startSpin() {
     if (!spinBtn || globalActivities.length === 0) {
@@ -85,7 +216,8 @@ function startSpin() {
     if(contentArea) contentArea.classList.add('hidden');
     if(resultArea) resultArea.classList.remove('hidden');
 
-    setLoading(true);
+    // Show loading in-place instead of overlay
+    renderLoading();
 
     if(spinBtn) {
         spinBtn.disabled = true;
@@ -190,10 +322,6 @@ function startSpin() {
 }
 
 function finishSpin(matches, relaxedKeys, orderList) {
-    if (loadingOverlay) {
-        loadingOverlay.classList.add('hidden');
-    }
-    
     if(!matches || matches.length === 0) {
         renderNoMatch();
         resetSpinButton();
@@ -225,120 +353,6 @@ function resetSpinButton() {
         spinBtn.disabled = false;
         spinBtn.innerHTML = '<span class="text-2xl mr-2">🧭</span> Explore again';
     }
-}
-
-// --- RENDER FUNCTIONS ---
-function renderResult(data, relaxedLabels) {
-    if(!contentArea) return;
-
-    let noteHtml = '';
-    if(relaxedLabels.length > 0) {
-        noteHtml = `
-            <div class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 text-amber-800 dark:text-amber-200 p-4 mb-6 rounded-r-md shadow-sm">
-                <strong class="font-bold">✨ Smart Match!</strong>
-                <p class="text-sm">Relaxed: ${relaxedLabels.join(', ')}</p>
-            </div>
-        `;
-    }
-
-    const detailsHtml = data.details && Array.isArray(data.details) && data.details.length > 0 
-        ? data.details.map(d => `<li class="ml-4 list-disc">${d}</li>`).join('') 
-        : '<li class="text-slate-500 italic">No specific details available.</li>';
-
-    const sponsorBadge = data.sponsored 
-        ? `<span class="absolute top-4 right-16 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">⭐ Sponsored</span>` 
-        : '';
-
-    const ratingOverlay = `
-        <div class="rating-overlay">
-            <button onclick="handleRating('happy')" class="group relative">
-                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-green-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😊</div>
-            </button>
-            <button onclick="handleRating('unhappy')" class="group relative">
-                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-red-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😕</div>
-            </button>
-        </div>
-    `;
-
-    // REMOVE THE inline feedbackBtn - button is now in HTML below filters!
-    // Previously had: const feedbackBtn = `<button...Give Feedback</button>`;
-    // Now deleted entirely from template
-
-    contentArea.innerHTML = `
-        ${noteHtml}
-        
-        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0">
-            ${sponsorBadge}
-            ${ratingOverlay}
-            <img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover">
-            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 text-white">
-                <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
-            </div>
-        </div>
-
-        <div class="p-6 space-y-4">
-            <p class="text-lg text-slate-700 dark:text-slate-300 leading-relaxed bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-100 dark:border-slate-700">${data.description}</p>
-            
-            <div class="flex flex-wrap gap-2 justify-center">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">💰 ${mapPrice(data.price)}</span>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">📍 ${mapDistance(data.distance)}</span>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">⏱️ ${mapDuration(data.duration)}</span>
-                ${data.kidsFriendly ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-200">👨‍👩‍👧‍👦 Kid-friendly</span>' : ''}
-                ${data.romantic ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200">❤️ Couples/romantic</span>' : ''}
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 mt-4">
-                <h3 class="font-bold text-slate-800 dark:text-white mb-3 text-lg flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                    Key details
-                </h3>
-                <ul class="space-y-2 text-slate-600 dark:text-slate-300 pl-4">${detailsHtml}</ul>
-            </div>
-            
-            <!-- FEEDBACK BUTTON REMOVED FROM HERE - NOW IN HTML ABOVE FILTERS -->
-        </div>
-    `;
-
-    contentArea.classList.remove('hidden');
-    contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    // Enable feedback button when we have a valid result
-    if(globalFeedbackBtn) {
-        globalFeedbackBtn.disabled = false;
-    }
-}
-
-function mapDistance(val) {
-    return val || '-';
-}
-
-function mapDuration(val) {
-    return val || '-';
-}
-
-function mapPrice(val) {
-    if (val === '$') return 'Budget/free';
-    if (val === '$$') return 'Moderate';
-    if (val === '$$$') return 'Luxury';
-    return 'Any';
-}
-
-function renderNoMatch() {
-    if(!contentArea) return;
-    
-    // Disable feedback button when no matches
-    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
-    
-    contentArea.innerHTML = `
-        <div class="text-center py-12 px-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
-            <div class="text-6xl mb-4">🗺️</div>
-            <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">No matches found</h3>
-            <p class="text-slate-600 dark:text-slate-400 mb-4">Even after relaxing all filters, no adventures match your criteria.</p>
-            <button onclick="location.reload()" class="bg-brand hover:bg-teal-800 text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-md">Refresh page</button>
-        </div>
-    `;
-    
-    contentArea.classList.remove('hidden');
 }
 
 function handleRating(type) {
