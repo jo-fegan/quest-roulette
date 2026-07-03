@@ -1,6 +1,6 @@
 // --- VERSION & DEBUGGER ---
 (function() {
-    const version = "v5.6-FNQ-InlineLoad";
+    const version = "v5.7-FNQ-FinalLeaves";
     const time = new Date().toLocaleTimeString();
     console.log(`%c🌴 [See and Do FNQ] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
 })();
@@ -16,6 +16,86 @@ const globalFeedbackBtn = document.getElementById('global-feedback-btn');
 let globalActivities = []; 
 let currentResultData = null; 
 let startTime = Date.now();
+
+// --- FALLING LEAVES ANIMATION FUNCTIONS ---
+let leafSpawnInterval = null;
+let activeFallingLeaves = [];
+
+function createFallingLeaf() {
+  const leaves = ['🍂', '🍁', '🍃'];
+  const leaf = document.createElement('span');
+  leaf.className = 'falling-leaf';
+  leaf.textContent = leaves[Math.floor(Math.random() * leaves.length)];
+  
+  // Random starting position across container
+  const leftPosition = Math.random() * 100;
+  const animationType = ['fallLeft', 'fallCenter', 'fallRight'][Math.floor(Math.random() * 3)];
+  const duration = 2 + Math.random() * 2; // 2-4 seconds per leaf
+  const delay = Math.random() * 1; // 0-1 second stagger
+  const size = 1 + Math.random() * 1; // 1-2rem variation
+  
+  leaf.style.left = `${leftPosition}%`;
+  leaf.style.top = '-20px';
+  leaf.style.animation = `${animationType} ${duration}s linear ${delay}s`;
+  leaf.style.fontSize = `${size}rem`;
+  leaf.style.opacity = '0';
+  
+  return leaf;
+}
+
+function startFallingLeaves(containerId, maxLeaves = 15) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  // Clear any previous interval
+  if (leafSpawnInterval) clearInterval(leafSpawnInterval);
+  activeFallingLeaves = [];
+  
+  function addNewLeaf() {
+    if (activeFallingLeaves.length >= maxLeaves) {
+      // Remove oldest leaf
+      const oldLeaf = activeFallingLeaves.shift();
+      if (oldLeaf && oldLeaf.parentNode) {
+        oldLeaf.parentNode.removeChild(oldLeaf);
+      }
+    }
+    
+    const leaf = createFallingLeaf();
+    container.appendChild(leaf);
+    activeFallingLeaves.push(leaf);
+    
+    // Clean up after animation completes
+    setTimeout(() => {
+      if (leaf.parentNode) {
+        leaf.parentNode.removeChild(leaf);
+        const idx = activeFallingLeaves.indexOf(leaf);
+        if (idx > -1) activeFallingLeaves.splice(idx, 1);
+      }
+    }, 4000); // Slightly longer than max animation duration
+  }
+  
+  // Initial batch
+  for (let i = 0; i < maxLeaves / 2; i++) {
+    setTimeout(addNewLeaf, i * 150);
+  }
+  
+  // Continuous spawning
+  leafSpawnInterval = setInterval(() => {
+    addNewLeaf();
+  }, 200);
+}
+
+function stopFallingLeaves(containerId) {
+  if (leafSpawnInterval) {
+    clearInterval(leafSpawnInterval);
+    leafSpawnInterval = null;
+  }
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.innerHTML = '';
+    activeFallingLeaves = [];
+  }
+}
 
 // --- INITIALIZATION ---
 async function init() {
@@ -76,29 +156,32 @@ if (typeof window !== 'undefined') {
 
 // --- RENDER FUNCTIONS ---
 
-// NEW: Render loading animation IN PLACE where photo would appear
+// NEW: Render loading animation WITH FALLING LEAVES IN PHOTO CONTAINER
 function renderLoading() {
     if(!contentArea) return;
     
     contentArea.innerHTML = `
-        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0 bg-white dark:bg-slate-800 flex items-center justify-center">
-            <div id="loading-animation" class="text-center p-6">
+        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0 bg-gradient-to-br from-teal-50 via-white to-slate-50 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+            <div id="loading-text-container" class="text-center p-6 z-10">
                 <p class="text-slate-600 dark:text-slate-300 font-medium text-base mb-4">Finding adventure...</p>
-                <div class="flex justify-center gap-3">
-                    <span class="animate-bounce delay-0">🍂</span>
-                    <span class="animate-bounce delay-150">🍁</span>
-                    <span class="animate-bounce delay-300">🍃</span>
-                </div>
             </div>
+            <!-- Falls leaves will spawn here -->
+            <div id="falling-leaves-wrapper" class="loading-leaves-container absolute inset-0"></div>
         </div>
     `;
     
     contentArea.classList.remove('hidden');
+    
+    // Start falling leaves animation
+    startFallingLeaves('falling-leaves-wrapper', 20);
 }
 
 // UPDATED: Original function now handles results only (NO inline feedback button)
 function renderResult(data, relaxedLabels) {
     if(!contentArea) return;
+
+    // Stop any falling leaves first
+    stopFallingLeaves('falling-leaves-wrapper');
 
     let noteHtml = '';
     if(relaxedLabels.length > 0) {
@@ -216,7 +299,7 @@ function startSpin() {
     if(contentArea) contentArea.classList.add('hidden');
     if(resultArea) resultArea.classList.remove('hidden');
 
-    // Show loading in-place instead of overlay
+    // Show loading with falling leaves in-place
     renderLoading();
 
     if(spinBtn) {
