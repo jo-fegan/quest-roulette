@@ -30,7 +30,7 @@ function createFallingLeaf() {
   // Random starting position across container
   const leftPosition = Math.random() * 100;
   const animationType = ['fallLeft', 'fallCenter', 'fallRight'][Math.floor(Math.random() * 3)];
-  const duration = 2 + Math.random() * 2; // 2-4 seconds per leaf
+  const duration = 4 + Math.random() * 2; // 2-4 seconds per leaf
   const delay = Math.random() * 1; // 0-1 second stagger
   const size = 1 + Math.random() * 1; // 1-2rem variation
   
