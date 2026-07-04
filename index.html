@@ -13,13 +13,33 @@
         theme: { 
           extend: { 
             colors: { 
-              brand: '#0f766e', // Teal-700 (Forest Green)
-              brandLight: '#2dd4bf', 
-              accent: '#f97316', 
-              sand: '#fdfbf7',
-              slate: '#1e293b',
-              darkBg: '#0f172a',
-              darkCard: '#1e293b'
+              brand: '#0f766e',       // Teal-700 (Forest Green)
+              brandHover: '#0d9488',  // Teal-600 (hover state)
+              brandLight: '#2dd4bf',  // Teal-400 (accent highlights)
+              accent: '#f97316',      // Orange-500 (CTA highlights)
+              sand: '#fdfbf7',         // Warm neutral background
+              slate: '#1e293b',        // Dark card bg
+              darkBg: '#0f172a',       // Deep navy/black bg
+              darkCard: '#1e293b',     // Card background in dark mode
+              
+              // TEXT COLORS - Standardized for light/dark consistency
+              textMain: '#1e293b',        // Main text (light mode)
+              textMainDark: '#f1f5f9',    // Main text (dark mode)
+              textMuted: '#64748b',       // Secondary text (light mode)
+              textMutedDark: '#cbd5e1',   // Secondary text (dark mode)
+              textContrast: '#ffffff',    // Text on colored backgrounds
+              
+              // PILL/COLOR BADGES - Ensure visible in both modes
+              pillPurple: '#c4b5fd',
+              pillPurpleDark: '#818cf8',
+              pillGreen: '#bbf7d0',
+              pillGreenDark: '#4ade80',
+              pillBlue: '#bfdbfe',
+              pillBlueDark: '#60a5fa',
+              pillPink: '#fecdd3',
+              pillPinkDark: '#fb7185',
+              pillRed: '#fed7aa',
+              pillRedDark: '#fb923c'
             }, 
             fontFamily: { sans: ['Inter', 'sans-serif'] } 
           } 
@@ -30,42 +50,102 @@
 
     <!-- CUSTOM STYLES -->
     <style>
+        /* ROOT COLOR VARIABLES - Ensures consistency across web/mobile */
+        :root {
+            --bg-primary: #f0f4f8;
+            --bg-secondary: #e2e8f0;
+            --card-bg: rgba(255, 255, 255, 0.98);
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.98);
+            --card-border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
         body { 
-            background-color: #f0f4f8; 
-            background-image: linear-gradient(to bottom, #f0f4f8, #e2e8f0);
+            background-color: var(--bg-primary);
+            /* Rainforest Gradient Background Placeholder */
+            background-image: linear-gradient(to bottom, rgba(15, 118, 110, 0.95), rgba(15, 118, 110, 0.85)),
+                              url('YOUR_RAINFOREST_IMAGE_URL_HERE');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             transition: background-color 0.3s ease;
-        }
-        .dark body { 
-            background-color: #0f172a; 
-            background-image: none;
-        }
-        .main-container { 
-            border-radius: 12px; 
-            transition: background-color 0.3s ease, color 0.3s ease;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-        }
-        .dark .main-container {
-            background: #1e293b;
-            border-color: #334155;
-        }
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.98); 
-            backdrop-filter: blur(4px); 
-        }
-        .dark .glass-card {
-            background: rgba(30, 41, 59, 0.98);
+            min-height: 100vh;
+            color: var(--text-primary);
         }
         
+        .dark body { 
+            background-color: var(--bg-primary);
+            background-image: linear-gradient(to bottom, rgba(15, 17, 42, 0.98), rgba(30, 41, 59, 0.95));
+        }
+        
+        .main-container { 
+            border-radius: 12px; 
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px -5px var(--shadow-color);
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(4px); 
+            color: var(--text-primary);
+        }
+
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin-custom { animation: spin 1s linear infinite; }
         
         .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(4px);
         }
 
-      
-        /* Overlay Ratings  .... not sure if i need this */
+        /* Falling Leaves Animation - UPDATED FOR CONSISTENT COLORS */
+        @keyframes fallLeft {
+            0% { transform: translateY(-5vh) rotate(0deg) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(80vh) rotate(720deg) translateX(-40px); opacity: 0; }
+        }
+
+        @keyframes fallCenter {
+            0% { transform: translateY(-5vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(80vh) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes fallRight {
+            0% { transform: translateY(-5vh) rotate(0deg) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(80vh) rotate(720deg) translateX(40px); opacity: 0; }
+        }
+
+        .loading-leaves-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .falling-leaf {
+            position: absolute;
+            font-size: 1.5rem;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* Overlay Ratings */
         .rating-overlay {
             position: absolute;
             top: 1rem;
@@ -74,39 +154,19 @@
             gap: 0.75rem;
             z-index: 20;
         }
-        
-    /* Falling Leaves Animation - UPDATED FOR INLINE USE */
-@keyframes fallLeft {
-  0% { transform: translateY(-5vh) rotate(0deg) translateX(0); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translateY(80vh) rotate(720deg) translateX(-40px); opacity: 0; }
-}
 
-@keyframes fallCenter {
-  0% { transform: translateY(-5vh) rotate(0deg); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translateY(80vh) rotate(360deg); opacity: 0; }
-}
-
-@keyframes fallRight {
-  0% { transform: translateY(-5vh) rotate(0deg) translateX(0); opacity: 0; }
-  10% { opacity: 1; }
-  100% { transform: translateY(80vh) rotate(720deg) translateX(40px); opacity: 0; }
-}
-
-.loading-leaves-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.falling-leaf {
-  position: absolute;
-  font-size: 1.5rem;
-  user-select: none;
-  pointer-events: none;
-}
+        /* Mobile/Responsive Fixes for Color Consistency */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 0.5rem !important;
+                padding: 1rem !important;
+            }
+            
+            body {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+        }
     </style>
 
     <!-- SUPABASE INITIALIZATION -->
@@ -164,7 +224,7 @@
         </div>
 
         <!-- EXPLORE BUTTON -->
-        <button id="spinBtn" onclick="startSpin()" class="w-full bg-brand hover:bg-teal-800 text-white font-bold py-4 px-6 rounded-lg shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-xl mb-8 focus:outline-none focus:ring-4 focus:ring-teal-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        <button id="spinBtn" onclick="startSpin()" class="w-full bg-brand hover:bg-brandHover text-white font-bold py-4 px-6 rounded-lg shadow-lg transform hover:scale-[1.02] transition-all duration-200 text-xl mb-8 focus:outline-none focus:ring-4 focus:ring-teal-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <span class="text-2xl">🧭</span> Explore Now
         </button>
 
@@ -179,10 +239,10 @@
                 <div class="flex items-center gap-4">
                     <label class="flex items-center cursor-pointer gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
                         <span>Hide seasonal</span>
-                        <input type="checkbox" name="toggle" id="hideSeasonal" class="toggle-checkbox w-5 h-5 rounded-full appearance-none cursor-pointer border border-slate-300 checked:bg-brand checked:border-brand transition-all"/>
+                        <input type="checkbox" name="toggle" id="hideSeasonal" class="toggle-checkbox w-5 h-5 rounded-full appearance-none cursor-pointer border border-slate-300 dark:border-slate-600 checked:bg-brand checked:border-brand transition-all"/>
                     </label>
                     
-                    <button onclick="resetFilters()" class="text-xs font-semibold text-slate-500 hover:text-brand dark:hover:text-brand-light underline decoration-dotted">
+                    <button onclick="resetFilters()" class="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-brand dark:hover:text-brand-light underline decoration-dotted">
                         Reset filters
                     </button>
                 </div>
@@ -266,7 +326,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
         <!-- GLOBAL FEEDBACK BUTTON BELOW FILTERS -->
         <div class="my-8 text-center border-t border-slate-200 dark:border-slate-700 pt-6">
@@ -276,10 +335,12 @@
                 💡 Give feedback
             </button>
         </div>
-    
+    </div>
+
+
     <!-- FEEDBACK MODAL -->
     <div id="feedbackModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-md p-6 m-4 transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
+        <div class="bg-white dark:bg-darkCard rounded-lg shadow-2xl w-full max-w-md p-6 m-4 transform transition-all scale-100 border border-slate-200 dark:border-slate-700">
             <h2 id="feedbackTitle" class="text-xl font-bold mb-4 text-slate-800 dark:text-white">Give feedback</h2>
             <div class="space-y-4">
                 <!-- Radio Selection -->
@@ -308,20 +369,16 @@
             </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button onclick="closeFeedbackModal()" class="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancel</button>
-                <button id="submitFeedbackBtn" class="px-4 py-2 bg-brand text-white rounded-lg hover:bg-teal-800 transition-colors">Submit</button>
+                <button id="submitFeedbackBtn" class="px-4 py-2 bg-brand text-white rounded-lg hover:bg-brandHover transition-colors">Submit</button>
             </div>
         </div>
     </div>
 
     <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed bottom-6 bg-slate-800 dark:bg-white text-white dark:text-slate-900 px-5 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 font-medium text-sm flex items-center gap-2">
+    <div id="toast" class="fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 font-medium text-sm flex items-center gap-2 bg-slate-800 dark:bg-white text-white dark:text-slate-900">
         Message here
     </div>
 
-
-    
-
-    <script src="ui-effects.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
