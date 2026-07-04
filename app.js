@@ -167,7 +167,7 @@ function renderResult(data, relaxedLabels) {
             </div>
         </div>
 
-        <div class="p-6 space-y-4">
+        <div class="pt-0 px-6 pb-6 space-y-4 mt-[-1rem]"> <!-- Reset top to above image -->
             <p class="text-lg text-slate-700 dark:text-slate-200 leading-relaxed bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-100 dark:border-slate-700">${data.description}</p>
             
             <div class="flex flex-wrap gap-2 justify-center">
@@ -190,8 +190,15 @@ function renderResult(data, relaxedLabels) {
         </div>
     `;
 
-    contentArea.classList.remove('hidden');
-    contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+contentArea.classList.remove('hidden');
+// Wait briefly then scroll to show full image with adequate top spacing
+setTimeout(() => {
+    const targetPosition = contentArea.getBoundingClientRect().top + window.pageYOffset - 20; // 20px buffer above
+    window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+    });
+}, 100);
 
     // Enable feedback button when we have a valid result
     if(globalFeedbackBtn) {
