@@ -167,6 +167,17 @@
                 padding-bottom: 0;
             }
         }
+
+        /* Ensure content area visible on all screen sizes */
+@media (max-width: 768px) {
+    #content-area {
+        margin-top: 1rem !important;
+    }
+    
+    .main-container {
+        overflow-x: hidden !important;
+    }
+}
     </style>
 
     <!-- SUPABASE INITIALIZATION -->
