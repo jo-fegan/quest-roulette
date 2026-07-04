@@ -1,6 +1,6 @@
 // --- VERSION & DEBUGGER ---
 (function() {
-    const version = "v5.7-FNQ-FinalLeaves";
+    const version = "v5.8-FNQ-DarkModeFix";
     const time = new Date().toLocaleTimeString();
     console.log(`%c🌴 [See and Do FNQ] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
 })();
@@ -30,7 +30,7 @@ function createFallingLeaf() {
   // Random starting position across container
   const leftPosition = Math.random() * 100;
   const animationType = ['fallLeft', 'fallCenter', 'fallRight'][Math.floor(Math.random() * 3)];
-  const duration = 2 + Math.random() * 4; // 8 seconds per leaf
+  const duration = 2 + Math.random() * 2; // 2-4 seconds per leaf
   const delay = Math.random() * 1; // 0-1 second stagger
   const size = 1 + Math.random() * 1; // 1-2rem variation
   
@@ -97,6 +97,141 @@ function stopFallingLeaves(containerId) {
   }
 }
 
+// --- RENDER FUNCTIONS ---
+
+// NEW: Render loading animation WITH FALLING LEAVES IN PHOTO CONTAINER
+function renderLoading() {
+    if(!contentArea) return;
+    
+    contentArea.innerHTML = `
+        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0 bg-gradient-to-br from-teal-50 via-white to-slate-50 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+            <div id="loading-text-container" class="text-center p-6 z-10">
+                <p class="text-slate-600 dark:text-slate-300 font-medium text-base mb-4">Finding adventure...</p>
+            </div>
+            <!-- Falls leaves will spawn here -->
+            <div id="falling-leaves-wrapper" class="loading-leaves-container absolute inset-0"></div>
+        </div>
+    `;
+    
+    contentArea.classList.remove('hidden');
+    
+    // Start falling leaves animation
+    startFallingLeaves('falling-leaves-wrapper', 20);
+}
+
+// UPDATED: Original function handles results only (NO inline feedback button)
+function renderResult(data, relaxedLabels) {
+    if(!contentArea) return;
+
+    // Stop any falling leaves first
+    stopFallingLeaves('falling-leaves-wrapper');
+
+    let noteHtml = '';
+    if(relaxedLabels.length > 0) {
+        noteHtml = `
+            <div class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 text-amber-800 dark:text-amber-200 p-4 mb-6 rounded-r-md shadow-sm">
+                <strong class="font-bold">✨ Smart Match!</strong>
+                <p class="text-sm">Relaxed: ${relaxedLabels.join(', ')}</p>
+            </div>
+        `;
+    }
+
+    const detailsHtml = data.details && Array.isArray(data.details) && data.details.length > 0 
+        ? data.details.map(d => `<li class="ml-4 list-disc">${d}</li>`).join('') 
+        : '<li class="text-slate-500 dark:text-slate-400 italic">No specific details available.</li>';
+
+    const sponsorBadge = data.sponsored 
+        ? `<span class="absolute top-4 right-16 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">⭐ Sponsored</span>` 
+        : '';
+
+    const ratingOverlay = `
+        <div class="rating-overlay">
+            <button onclick="handleRating('happy')" class="group relative">
+                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-green-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😊</div>
+            </button>
+            <button onclick="handleRating('unhappy')" class="group relative">
+                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-red-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😕</div>
+            </button>
+        </div>
+    `;
+
+    contentArea.innerHTML = `
+        ${noteHtml}
+        
+        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0">
+            ${sponsorBadge}
+            ${ratingOverlay}
+            <img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 text-white">
+                <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-4">
+            <p class="text-lg text-slate-700 dark:text-slate-200 leading-relaxed bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-100 dark:border-slate-700">${data.description}</p>
+            
+            <div class="flex flex-wrap gap-2 justify-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">💰 ${mapPrice(data.price)}</span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">📍 ${mapDistance(data.distance)}</span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">⏱️ ${mapDuration(data.duration)}</span>
+                ${data.kidsFriendly ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-200">👨‍👩‍👧‍👦 Kid-friendly</span>' : ''}
+                ${data.romantic ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200">❤️ Couples/romantic</span>' : ''}
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 mt-4">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 mb-3 text-lg flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Key details
+                </h3>
+                <ul class="space-y-2 text-slate-600 dark:text-slate-300 pl-4">${detailsHtml}</ul>
+            </div>
+            
+            <!-- NO FEEDBACK BUTTON HERE - IT'S IN HTML BELOW FILTERS -->
+        </div>
+    `;
+
+    contentArea.classList.remove('hidden');
+    contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Enable feedback button when we have a valid result
+    if(globalFeedbackBtn) {
+        globalFeedbackBtn.disabled = false;
+    }
+}
+
+function mapDistance(val) {
+    return val || '-';
+}
+
+function mapDuration(val) {
+    return val || '-';
+}
+
+function mapPrice(val) {
+    if (val === '$') return 'Budget/free';
+    if (val === '$$') return 'Moderate';
+    if (val === '$$$') return 'Luxury';
+    return 'Any';
+}
+
+function renderNoMatch() {
+    if(!contentArea) return;
+    
+    // Disable feedback button when no matches
+    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
+    
+    contentArea.innerHTML = `
+        <div class="text-center py-12 px-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
+            <div class="text-6xl mb-4">🗺️</div>
+            <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">No matches found</h3>
+            <p class="text-slate-600 dark:text-slate-300 mb-4">Even after relaxing all filters, no adventures match your criteria.</p>
+            <button onclick="location.reload()" class="bg-brand hover:bg-brandHover text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-md">Refresh page</button>
+        </div>
+    `;
+    
+    contentArea.classList.remove('hidden');
+}
+
 // --- INITIALIZATION ---
 async function init() {
     if (!window.supabaseClient && Date.now() - startTime > 10000) {
@@ -152,141 +287,6 @@ async function init() {
 
 if (typeof window !== 'undefined') {
     window.addEventListener('DOMContentLoaded', init);
-}
-
-// --- RENDER FUNCTIONS ---
-
-// NEW: Render loading animation WITH FALLING LEAVES IN PHOTO CONTAINER
-function renderLoading() {
-    if(!contentArea) return;
-    
-    contentArea.innerHTML = `
-        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0 bg-gradient-to-br from-teal-50 via-white to-slate-50 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
-            <div id="loading-text-container" class="text-center p-6 z-10">
-                <p class="text-slate-600 dark:text-slate-300 font-medium text-base mb-4">Finding adventure...</p>
-            </div>
-            <!-- Falls leaves will spawn here -->
-            <div id="falling-leaves-wrapper" class="loading-leaves-container absolute inset-0"></div>
-        </div>
-    `;
-    
-    contentArea.classList.remove('hidden');
-    
-    // Start falling leaves animation
-    startFallingLeaves('falling-leaves-wrapper', 20);
-}
-
-// UPDATED: Original function now handles results only (NO inline feedback button)
-function renderResult(data, relaxedLabels) {
-    if(!contentArea) return;
-
-    // Stop any falling leaves first
-    stopFallingLeaves('falling-leaves-wrapper');
-
-    let noteHtml = '';
-    if(relaxedLabels.length > 0) {
-        noteHtml = `
-            <div class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 text-amber-800 dark:text-amber-200 p-4 mb-6 rounded-r-md shadow-sm">
-                <strong class="font-bold">✨ Smart Match!</strong>
-                <p class="text-sm">Relaxed: ${relaxedLabels.join(', ')}</p>
-            </div>
-        `;
-    }
-
-    const detailsHtml = data.details && Array.isArray(data.details) && data.details.length > 0 
-        ? data.details.map(d => `<li class="ml-4 list-disc">${d}</li>`).join('') 
-        : '<li class="text-slate-500 italic">No specific details available.</li>';
-
-    const sponsorBadge = data.sponsored 
-        ? `<span class="absolute top-4 right-16 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">⭐ Sponsored</span>` 
-        : '';
-
-    const ratingOverlay = `
-        <div class="rating-overlay">
-            <button onclick="handleRating('happy')" class="group relative">
-                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-green-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😊</div>
-            </button>
-            <button onclick="handleRating('unhappy')" class="group relative">
-                <div class="w-10 h-10 rounded-full bg-white/90 dark:bg-white/80 text-red-600 flex items-center justify-center text-2xl hover:scale-110 transition-transform shadow-md border border-gray-200 dark:border-gray-300">😕</div>
-            </button>
-        </div>
-    `;
-
-    contentArea.innerHTML = `
-        ${noteHtml}
-        
-        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0">
-            ${sponsorBadge}
-            ${ratingOverlay}
-            <img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover">
-            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 text-white">
-                <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
-            </div>
-        </div>
-
-        <div class="p-6 space-y-4">
-            <p class="text-lg text-slate-700 dark:text-slate-300 leading-relaxed bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-100 dark:border-slate-700">${data.description}</p>
-            
-            <div class="flex flex-wrap gap-2 justify-center">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">💰 ${mapPrice(data.price)}</span>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">📍 ${mapDistance(data.distance)}</span>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">⏱️ ${mapDuration(data.duration)}</span>
-                ${data.kidsFriendly ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-200">👨‍👩‍👧‍👦 Kid-friendly</span>' : ''}
-                ${data.romantic ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200">❤️ Couples/romantic</span>' : ''}
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 mt-4">
-                <h3 class="font-bold text-slate-800 dark:text-white mb-3 text-lg flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                    Key details
-                </h3>
-                <ul class="space-y-2 text-slate-600 dark:text-slate-300 pl-4">${detailsHtml}</ul>
-            </div>
-            
-            <!-- NO FEEDBACK BUTTON HERE - IT'S IN HTML BELOW FILTERS -->
-        </div>
-    `;
-
-    contentArea.classList.remove('hidden');
-    contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    // Enable feedback button when we have a valid result
-    if(globalFeedbackBtn) {
-        globalFeedbackBtn.disabled = false;
-    }
-}
-
-function mapDistance(val) {
-    return val || '-';
-}
-
-function mapDuration(val) {
-    return val || '-';
-}
-
-function mapPrice(val) {
-    if (val === '$') return 'Budget/free';
-    if (val === '$$') return 'Moderate';
-    if (val === '$$$') return 'Luxury';
-    return 'Any';
-}
-
-function renderNoMatch() {
-    if(!contentArea) return;
-    
-    // Disable feedback button when no matches
-    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
-    
-    contentArea.innerHTML = `
-        <div class="text-center py-12 px-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
-            <div class="text-6xl mb-4">🗺️</div>
-            <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">No matches found</h3>
-            <p class="text-slate-600 dark:text-slate-400 mb-4">Even after relaxing all filters, no adventures match your criteria.</p>
-            <button onclick="location.reload()" class="bg-brand hover:bg-teal-800 text-white font-bold py-2 px-6 rounded-lg transition-colors shadow-md">Refresh page</button>
-        </div>
-    `;
-    
-    contentArea.classList.remove('hidden');
 }
 
 // --- FILTER LOGIC ---
@@ -393,14 +393,14 @@ function startSpin() {
         } else {
             const nextRelax = relaxOrder[relaxedFilters.length];
             relaxedFilters.push(nextRelax.key);
-            setTimeout(() => tryMatch(attempt + 1), 600);
+            setTimeout(() => tryMatch(attempt + 1), 2000);
         }
     }
 
     setTimeout(() => {
         setTimeout(() => {
             tryMatch(1);
-        }, 600);
+        }, 800);
     }, 2000);
 }
 
@@ -532,6 +532,59 @@ function resetFilters() {
 function getShortMonthName(monthIndex) {
     const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
     return months[monthIndex];
+}
+
+// Toast notification (uses dark mode aware styles)
+function showToast(message, type = 'info') {
+    toast.innerText = message;
+    toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-xl transform transition-all duration-300 z-50 font-medium text-sm flex items-center gap-2 bg-slate-800 dark:bg-white text-white dark:text-slate-900`;
+    
+    if (type === 'success') {
+        toast.classList.add('bg-green-600', 'text-white');
+    } else if (type === 'error') {
+        toast.classList.add('bg-red-600', 'text-white');
+    }
+    
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    
+    setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+    }, 3000);
+}
+
+// --- DARK MODE LOGIC ---
+const themeToggleBtn = document.getElementById('themeToggle');
+const htmlElement = document.documentElement;
+const sunIcon = document.getElementById('sunIcon');
+const moonIcon = document.getElementById('moonIcon');
+
+function applyTheme(isDark) {
+    if (isDark) {
+        htmlElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        sunIcon.classList.remove('hidden');
+        moonIcon.classList.add('hidden');
+    } else {
+        htmlElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+    }
+}
+
+const savedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    applyTheme(true);
+} else {
+    applyTheme(false);
+}
+
+if(themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        const isDark = htmlElement.classList.contains('dark');
+        applyTheme(!isDark);
+    });
 }
 
 // Export functions globally
