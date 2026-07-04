@@ -191,19 +191,19 @@ function renderResult(data, relaxedLabels) {
     `;
 
 contentArea.classList.remove('hidden');
-// Wait briefly then scroll to show full image with adequate top spacing
-setTimeout(() => {
-    const targetPosition = contentArea.getBoundingClientRect().top + window.pageYOffset - 20; // 20px buffer above
-    window.scrollTo({
-        top: targetPosition,
-        behavior: 'smooth'
-    });
-}, 100);
 
-    // Enable feedback button when we have a valid result
-    if(globalFeedbackBtn) {
-        globalFeedbackBtn.disabled = false;
-    }
+requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+        const pos = contentArea.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: pos, behavior: 'smooth' });
+        contentArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+});
+
+if(globalFeedbackBtn) {
+    globalFeedbackBtn.disabled = false;
+}
+
 }
 
 function mapDistance(val) {
@@ -255,7 +255,7 @@ async function init() {
     if(contentArea) contentArea.classList.add('hidden');
 
     // Disable feedback button initially
-    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
+    if(globalFeedbackBtn) globalFeedbackBtn.disabled = true; 
 
     console.log('🔄 Fetching activities...');
     try {
@@ -404,11 +404,7 @@ function startSpin() {
         }
     }
 
-    setTimeout(() => {
-        setTimeout(() => {
-            tryMatch(1);
-        }, 800);
-    }, 2000);
+tryMatch(1);
 }
 
 function finishSpin(matches, relaxedKeys, orderList) {
