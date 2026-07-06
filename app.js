@@ -360,7 +360,8 @@ function startSpin() {
         { key: 'duration', label: 'Duration' },
         { key: 'style', label: 'Style' },
         { key: 'distance', label: 'Distance' },
-        { key: 'price', label: 'Price' }
+        { key: 'price', label: 'Price' },
+        { key: 'petFriendly', label: 'Pets welcome' }
     ];
 
     let matchedActivities = [];
