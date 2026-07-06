@@ -22,7 +22,7 @@ let leafSpawnInterval = null;
 let activeFallingLeaves = [];
 
 function createFallingLeaf() {
-  const leaves = ['🍂', '🍁', '🍃'];
+  const leaves = ['🐊', '🌴', '🥥', '🏖️', '🌞', '🍹', '🐠', '🥭', '🍍', '🧜🏼‍♀️', '🌿', '🍃'];
   const leaf = document.createElement('span');
   leaf.className = 'falling-leaf';
   leaf.textContent = leaves[Math.floor(Math.random() * leaves.length)];
