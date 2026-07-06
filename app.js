@@ -1,6 +1,6 @@
 // --- VERSION & DEBUGGER ---
 (function() {
-    const version = "v5.8-FNQ-DarkModeFix";
+    const version = "v6.0-FNQ-BugFix";
     const time = new Date().toLocaleTimeString();
     console.log(`%c🌴 [See and Do FNQ] ${version} loaded at ${time}`, "color: #0f766e; font-weight: bold;");
 })();
@@ -155,8 +155,8 @@ function renderResult(data, relaxedLabels) {
         </div>
     `;
 
-// Show activity tags
-       contentArea.innerHTML = `
+    // Show activity tags
+    contentArea.innerHTML = `
         ${noteHtml}
         
         <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0">
@@ -165,8 +165,6 @@ function renderResult(data, relaxedLabels) {
             <img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover">
             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 text-white">
                 <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
-            </div>
-            <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
 <!-- Uncomment below when GPS data available -->
 <!-- 
 ${data.latitude && data.longitude ? `
@@ -180,25 +178,26 @@ ${data.latitude && data.longitude ? `
     </a>
 ` : ''}
 -->
+            </div>
         </div>
 
         <div class="pt-0 px-6 pb-6 space-y-4 mt-[-1rem]"> <!-- Reset top to above image -->
-            <p class="text-lg leading-relaxed bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-600 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700">${data.description}</p>
+            <p class="text-lg leading-relaxed bg-white dark:bg-slate-800 text-slate-800 dark:text-teal-600 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700">${data.description}</p>
 
 
             <div class="flex flex-wrap gap-2 justify-center">
-    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-teal-700 dark:text-teal-600">💰 ${mapPrice(data.price)}</span>
-    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-teal-700 dark:text-teal-600">🚗 ${mapDistance(data.distance)}</span>
-    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-teal-700 dark:text-teal-600">🏃 ${mapIntensity(data.activityLevel)}</span>
-    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 dark:bg-orange-900/50 text-teal-700 dark:text-teal-600">⏱️ ${mapDuration(data.duration)}</span>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-slate-800 dark:text-teal-600">💰 ${mapPrice(data.price)}</span>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-slate-800 dark:text-teal-600">🚗 ${mapDistance(data.distance)}</span>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-slate-800 dark:text-teal-600">🏃 ${mapIntensity(data.activityLevel)}</span>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 dark:bg-orange-900/50 text-slate-800 dark:text-teal-600">⏱️ ${mapDuration(data.duration)}</span>
 </div>
 
             <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 mt-4">
-                <h3 class="font-bold text-slate-800 dark:text-slate-100 mb-3 text-lg flex items-center">
+                <h3 class="font-bold text-slate-800 dark:text-teal-600 mb-3 text-lg flex items-center">
                     <svg class="w-5 h-5 mr-2 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                     Key details
                 </h3>
-                <ul class="space-y-2 text-slate-600 dark:text-slate-300 pl-4">${detailsHtml}</ul>
+                <ul class="space-y-2 text-slate-600 dark:text-teal-600 pl-4">${detailsHtml}</ul>
             </div>
             
             <!-- NO FEEDBACK BUTTON HERE - IT'S IN HTML BELOW FILTERS -->
@@ -209,7 +208,7 @@ contentArea.classList.remove('hidden');
 
 requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-        const pos = contentArea.getBoundingClientRect().top + window.pageYOffset - 80;
+        const pos = contentArea.getBoundingClientRect().top + window.pageYOffset - 120;
         window.scrollTo({ top: pos, behavior: 'smooth' });
         contentArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
@@ -301,7 +300,10 @@ async function init() {
                 happy_count: row.happy_count || 0,
                 unhappy_count: row.unhappy_count || 0,
                 sponsored: row.sponsored || false,
-                season: row.season || {}
+                season: row.season || {},
+                latitude: jsonb.latitude || null,
+                longitude: jsonb.longitude || null,
+                petFriendly: jsonb.petFriendly || false
             };
         });
 
@@ -339,11 +341,9 @@ function startSpin() {
     // Disable feedback while finding
     if(globalFeedbackBtn) globalFeedbackBtn.disabled = true;
 
-    const priceVal = document.getElementById('price')?.value || 'all';
     const hideSeasonal = document.getElementById('hideSeasonal')?.checked || false;
     
     const userFilters = {
-        price: priceVal,
         distance: document.getElementById('distance')?.value || 'all',
         style: document.getElementById('style')?.value || 'all',
         weather: document.getElementById('weather')?.value || 'all',
@@ -377,7 +377,7 @@ function startSpin() {
             else if (relaxedKey === 'style') currentFilters.style = 'all';
             else if (relaxedKey === 'distance') currentFilters.distance = 'all';
             else if (relaxedKey === 'price') currentFilters.price = 'all';
-            else if (relaxedKey === 'petFriendly') currentFilters.price = 'all';
+            else if (relaxedKey === 'petFriendly') currentFilters.petFriendly = 'all';
         });
 
         matchedActivities = globalActivities.filter((act) => {
@@ -419,14 +419,14 @@ if (selectedPrices.length > 0) {
             
             if (currentFilters.locType !== 'all' && act.locationType !== currentFilters.locType) passes = false;
 
-            // Pet friendly filter
-if (document.getElementById('petFriendly')?.value !== 'all') {
-    const petPreference = document.getElementById('petFriendly').value;
-    const actPetFriendly = (data.petFriendly === 'true' || data.petFriendly === true);
-    
-    if (petPreference === 'yes' && !actPetFriendly) passes = false;
-    if (petPreference === 'no' && actPetFriendly) passes = false;
-}
+            // Pet friendly filter - FIXED VARIABLE NAME FROM data.to act.
+            if (document.getElementById('petFriendly')?.value !== 'all') {
+                const petPreference = document.getElementById('petFriendly').value;
+                const actPetFriendly = (act.petFriendly === 'true' || act.petFriendly === true);
+                
+                if (petPreference === 'yes' && !actPetFriendly) passes = false;
+                if (petPreference === 'no' && actPetFriendly) passes = false;
+            }
 
             return passes;
         });
@@ -443,6 +443,7 @@ if (document.getElementById('petFriendly')?.value !== 'all') {
 tryMatch(1);
 }
 
+// PRICES HELPER FUNCTION - ADDED FOR CHECKBOX HANDLING
 function getSelectedPrices() {
     const checkboxes = document.querySelectorAll('[name="priceOpt"]:checked');
     const values = Array.from(checkboxes).map(cb => cb.value);
@@ -451,6 +452,33 @@ function getSelectedPrices() {
     if (values.includes('any') || values.length === 0) return [];
     
     return values;
+}
+
+// PRICE CHECKBOX MUTEX HANDLER - ADDED MISSING FUNCTION
+function handlePriceCheckbox(clickedCheckbox) {
+    const checkboxes = document.querySelectorAll('[name="priceOpt"]');
+    
+    if (clickedCheckbox.value === 'any') {
+        // If "Any" clicked, deselect all individual options
+        checkboxes.forEach(cb => {
+            if (cb.value !== 'any') cb.checked = false;
+        });
+    } else {
+        // Individual option clicked - deselect "Any"
+        document.querySelector('[value="any"]').checked = false;
+        
+        const selectedCount = Array.from(checkboxes).filter(cb => 
+            cb.checked && cb.value !== 'any'
+        ).length;
+        
+        // If all 3 selected, auto-check "Any" and deselect individuals
+        if (selectedCount >= 3) {
+            document.querySelector('[value="any"]').checked = true;
+            checkboxes.forEach(cb => {
+                if (cb.value !== 'any') cb.checked = false;
+            });
+        }
+    }
 }
 
 function finishSpin(matches, relaxedKeys, orderList) {
@@ -567,14 +595,22 @@ document.getElementById('submitFeedbackBtn').addEventListener('click', async () 
 });
 
 function resetFilters() {
-    document.getElementById('price').value = 'all';
-    document.getElementById('level').value = 'all';
-    document.getElementById('style').value = 'all';
+    // Reset all dropdown filters
     document.getElementById('distance').value = 'all';
+    document.getElementById('style').value = 'all';
     document.getElementById('duration').value = 'all';
     document.getElementById('weather').value = 'all';
+    document.getElementById('level').value = 'all';
     document.getElementById('locationType').value = 'all';
+    document.getElementById('petFriendly').value = 'all';
     document.getElementById('hideSeasonal').checked = false;
+    
+    // Reset price checkboxes to Any only
+    const checkboxes = document.querySelectorAll('[name="priceOpt"]');
+    checkboxes.forEach(cb => {
+        cb.checked = (cb.value === 'any');
+    });
+    
     showToast("Filters reset.", "info");
 }
 
@@ -642,3 +678,4 @@ window.handleRating = handleRating;
 window.openFeedbackModal = openFeedbackModal;
 window.closeFeedbackModal = closeFeedbackModal;
 window.resetFilters = resetFilters;
+window.handlePriceCheckbox = handlePriceCheckbox; // ← ADDED EXPORT FOR CHECKBOX HANDLER
