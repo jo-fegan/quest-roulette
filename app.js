@@ -155,7 +155,8 @@ function renderResult(data, relaxedLabels) {
         </div>
     `;
 
-    contentArea.innerHTML = `
+// Show activity tags
+       contentArea.innerHTML = `
         ${noteHtml}
         
         <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg mb-0">
@@ -165,18 +166,32 @@ function renderResult(data, relaxedLabels) {
             <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 text-white">
                 <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
             </div>
+            <h2 class="text-3xl font-bold drop-shadow-md">${data.title}</h2>
+<!-- Uncomment below when GPS data available -->
+<!-- 
+${data.latitude && data.longitude ? `
+    <a href="https://www.google.com/maps/dir/?api=1&destination=${data.latitude},${data.longitude}" 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="ml-2 inline-block align-middle">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4285F4" class="w-5 h-5 inline-block">
+            <path d="M20.7 9.6c-.4-4.3-4-7.6-8.4-7.6C5.9 2 2 5.9 2 10.7c0 5.4 8.3 12 8.3 12s8.3-6.7 8.4-12c.2-.6.2-1 .1-1.1zM10.3 14c-1.8 0-3.3-1.5-3.3-3.3s1.5-3.3 3.3-3.3 3.3 1.5 3.3 3.3S12.1 14 10.3 14z"/>
+        </svg>
+    </a>
+` : ''}
+-->
         </div>
 
         <div class="pt-0 px-6 pb-6 space-y-4 mt-[-1rem]"> <!-- Reset top to above image -->
-            <p class="text-lg text-slate-700 dark:text-slate-200 leading-relaxed bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-100 dark:border-slate-700">${data.description}</p>
-            
+            <p class="text-lg leading-relaxed bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-600 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700">${data.description}</p>
+
+
             <div class="flex flex-wrap gap-2 justify-center">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200">💰 ${mapPrice(data.price)}</span>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">📍 ${mapDistance(data.distance)}</span>
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">⏱️ ${mapDuration(data.duration)}</span>
-                ${data.kidsFriendly ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-200">👨‍👩‍👧‍👦 Kid-friendly</span>' : ''}
-                ${data.romantic ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200">❤️ Couples/romantic</span>' : ''}
-            </div>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 dark:bg-purple-900/50 text-teal-700 dark:text-teal-600">💰 ${mapPrice(data.price)}</span>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900/50 text-teal-700 dark:text-teal-600">🚗 ${mapDistance(data.distance)}</span>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-teal-700 dark:text-teal-600">🏃 ${mapIntensity(data.activityLevel)}</span>
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 dark:bg-orange-900/50 text-teal-700 dark:text-teal-600">⏱️ ${mapDuration(data.duration)}</span>
+</div>
 
             <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700 mt-4">
                 <h3 class="font-bold text-slate-800 dark:text-slate-100 mb-3 text-lg flex items-center">
@@ -218,6 +233,13 @@ function mapPrice(val) {
     if (val === '$') return 'Budget/free';
     if (val === '$$') return 'Moderate';
     if (val === '$$$') return 'Luxury';
+    return 'Any';
+}
+
+function mapIntensity(val) {
+    if (val === 'relaxed') return 'Relaxed 😌';
+    if (val === 'active') return 'Active 🏃';
+    if (val === 'intense') return 'Intense 💪';
     return 'Any';
 }
 
@@ -355,6 +377,7 @@ function startSpin() {
             else if (relaxedKey === 'style') currentFilters.style = 'all';
             else if (relaxedKey === 'distance') currentFilters.distance = 'all';
             else if (relaxedKey === 'price') currentFilters.price = 'all';
+            else if (relaxedKey === 'petFriendly') currentFilters.price = 'all';
         });
 
         matchedActivities = globalActivities.filter((act) => {
@@ -367,13 +390,17 @@ function startSpin() {
 
             let passes = true;
 
-            if (currentFilters.price !== 'all') {
-                if (currentFilters.price === '$') {
-                    if (act.price !== '$' && act.price !== 'Free' && act.price !== 'free') passes = false;
-                } else {
-                    if (act.price !== currentFilters.price) passes = false;
-                }
-            }
+// Get selected prices from checkboxes (XOR handled in UI)
+const selectedPrices = getSelectedPrices(); // Returns array like ['$'] or []
+
+if (selectedPrices.length > 0) {
+    const actPrice = act.price;
+    if (actPrice === 'Free' || actPrice === 'free') {
+        if (!selectedPrices.includes('$')) passes = false; // Budget checkbox means Free included
+    } else if (!selectedPrices.includes(actPrice)) {
+        passes = false;
+    }
+}
 
             if (currentFilters.distance !== 'all' && act.distance !== currentFilters.distance) passes = false;
 
@@ -392,6 +419,15 @@ function startSpin() {
             
             if (currentFilters.locType !== 'all' && act.locationType !== currentFilters.locType) passes = false;
 
+            // Pet friendly filter
+if (document.getElementById('petFriendly')?.value !== 'all') {
+    const petPreference = document.getElementById('petFriendly').value;
+    const actPetFriendly = (data.petFriendly === 'true' || data.petFriendly === true);
+    
+    if (petPreference === 'yes' && !actPetFriendly) passes = false;
+    if (petPreference === 'no' && actPetFriendly) passes = false;
+}
+
             return passes;
         });
 
@@ -405,6 +441,16 @@ function startSpin() {
     }
 
 tryMatch(1);
+}
+
+function getSelectedPrices() {
+    const checkboxes = document.querySelectorAll('[name="priceOpt"]:checked');
+    const values = Array.from(checkboxes).map(cb => cb.value);
+    
+    // If "any" is selected OR no selections, return empty (meaning any price OK)
+    if (values.includes('any') || values.length === 0) return [];
+    
+    return values;
 }
 
 function finishSpin(matches, relaxedKeys, orderList) {
@@ -450,7 +496,7 @@ function handleRating(type) {
     if (type === 'happy') {
         showToast("We like this one too!", "success");
     } else {
-        showToast("Not your vibe? Explore again!", "info");
+showToast("Not your vibe? Try the filters.", "info");
     }
 }
 
