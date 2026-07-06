@@ -117,6 +117,8 @@ function renderLoading() {
     
     // Start falling leaves animation
     startFallingLeaves('falling-leaves-wrapper', 20);
+
+     scrollToContent();
 }
 
 // UPDATED: Original function handles results only (NO inline feedback button)
@@ -206,11 +208,11 @@ ${data.latitude && data.longitude ? `
 
 contentArea.classList.remove('hidden');
 
+
+//call the scrolltocontent function
 requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-        const pos = contentArea.getBoundingClientRect().top + window.pageYOffset - 120;
-        window.scrollTo({ top: pos, behavior: 'smooth' });
-        contentArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        scrollToContent();
     });
 });
 
@@ -618,6 +620,16 @@ function resetFilters() {
 function getShortMonthName(monthIndex) {
     const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
     return months[monthIndex];
+}
+
+//Auto-scroll up helper function
+function scrollToContent() {
+    const subtitle = document.getElementById('pageSubtitle');
+    if (subtitle) {
+        // Position viewport so subtitle's bottom edge is at the top of visible area
+        const offset = subtitle.getBoundingClientRect().bottom + window.pageYOffset + 8;
+        window.scrollTo({ top: offset, behavior: 'smooth' });
+    }
 }
 
 // Toast notification (uses dark mode aware styles)
