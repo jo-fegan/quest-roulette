@@ -84,10 +84,12 @@
             color: var(--text-primary);
         }
         
-        .dark body { 
-            background-color: var(--bg-primary);
-            background-image: linear-gradient(to bottom, rgba(15, 17, 42, 0.98), rgba(30, 41, 59, 0.95));
-        }
+.dark body { 
+    background-color: var(--bg-primary);
+    /* Same gradient + image as light mode - dark mode displays background identically */
+    background-image: linear-gradient(to bottom right, rgba(253, 251, 247, 0), rgba(238, 238, 245, 0.6)),
+                      url('https://github.com/jo-fegan/quest-roulette/blob/82099278669e0dc34fb37ee7a89bfeb943f07196/assets/cairns_palm.jpg?raw=true');
+}
         
         .main-container { 
             border-radius: 12px; 
@@ -262,15 +264,31 @@
             <div class="filters-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <!-- Price -->
-                <div class="filter-group">
-                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Price</label>
-                    <select id="price" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white font-medium">
-                        <option value="all">Any</option>
-                        <option value="$">🪙 Budget/Free</option>
-                        <option value="$$">💵 Moderate</option>
-                        <option value="$$$">💎 Luxury</option>
-                    </select>
-                </div>
+<div class="filter-group">
+    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Price</label>
+    <div class="space-y-2" id="priceFilterGroup">
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="priceOpt" value="any" checked onchange="handlePriceCheckbox(this)" 
+                   class="w-4 h-4 text-brand rounded border-slate-300 dark:border-slate-600">
+            <span class="text-sm text-slate-700 dark:text-slate-300">Any</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="priceOpt" value="$" onchange="handlePriceCheckbox(this)" 
+                   class="w-4 h-4 text-brand rounded border-slate-300 dark:border-slate-600">
+            <span class="text-sm text-slate-700 dark:text-slate-300">💰 Budget/Free</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="priceOpt" value="$$" onchange="handlePriceCheckbox(this)" 
+                   class="w-4 h-4 text-brand rounded border-slate-300 dark:border-slate-600">
+            <span class="text-sm text-slate-700 dark:text-slate-300">💵 Moderate</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="priceOpt" value="$$$" onchange="handlePriceCheckbox(this)" 
+                   class="w-4 h-4 text-brand rounded border-slate-300 dark:border-slate-600">
+            <span class="text-sm text-slate-700 dark:text-slate-300">💎 Luxury</span>
+        </label>
+    </div>
+</div>
 
                 <!-- Intensity -->
                 <div class="filter-group">
@@ -298,9 +316,9 @@
                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Driving time</label>
                     <select id="distance" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
                         <option value="all">Any</option>
-                        <option value="Under 25mins">Under 25mins</option>
-                        <option value="Under 90mins">Under 90mins</option>
-                        <option value="Longer Drive">Longer drive</option>
+    <option value="Under 25mins">🕛 Under 25mins</option>
+    <option value="Under 90mins">🕐 Under 90mins</option>
+    <option value="Longer Drive">🕒 Longer drive</option>
                     </select>
                 </div>
 
@@ -308,10 +326,10 @@
                 <div class="filter-group">
                     <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Duration</label>
                     <select id="duration" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
-                        <option value="all">Any</option>
-                        <option value="Half Day or Less">Half day or less</option>
-                        <option value="Full Day">Full day</option>
-                        <option value="Multi-Day">Multi-day</option>
+    <option value="all">Any</option>
+    <option value="Half Day or Less">🌞 Half a day or less</option>
+    <option value="Full Day">🌅 Full Day</option>
+    <option value="Multi-Day">🌛 Multi-day</option>
                     </select>
                 </div>
 
@@ -335,6 +353,16 @@
                         <option value="indoor">🏠 Indoor</option>
                     </select>
                 </div>
+                
+                <!-- Pet Friendly -->
+<div class="filter-group">
+    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Pets welcome</label>
+    <select id="petFriendly" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand outline-none dark:text-white">
+        <option value="all" selected>Any</option>
+        <option value="yes">🐕🐈 Yes</option>
+        <option value="no">🚫 No</option>
+    </select>
+</div>
             </div>
         </div>
 
