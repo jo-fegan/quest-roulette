@@ -625,9 +625,25 @@ function getShortMonthName(monthIndex) {
 //Auto-scroll up helper function
 function scrollToContent() {
     const subtitle = document.getElementById('pageSubtitle');
+    const topHeader = document.querySelector('header'); // sticky top bar
+    const headerHeight = topHeader ? topHeader.offsetHeight : 0;
+
+    // Prefer scrolling so the `content-area` top sits just below the header
+    if (contentArea) {
+        // Only attempt if content area has layout (not hidden)
+        const contentRect = contentArea.getBoundingClientRect();
+        if (contentRect.height > 0 || !contentArea.classList.contains('hidden')) {
+            const targetTop = contentRect.top + window.pageYOffset;
+            const offset = Math.max(0, targetTop - headerHeight - 8);
+            window.scrollTo({ top: offset, behavior: 'smooth' });
+            return;
+        }
+    }
+
+    // Fallback: align just after subtitle so content appears below it
     if (subtitle) {
-        // Position viewport so subtitle's bottom edge is at the top of visible area
-        const offset = subtitle.getBoundingClientRect().bottom + window.pageYOffset + 8;
+        const subtitleBottom = subtitle.getBoundingClientRect().bottom + window.pageYOffset;
+        const offset = Math.max(0, subtitleBottom - headerHeight - 8);
         window.scrollTo({ top: offset, behavior: 'smooth' });
     }
 }
