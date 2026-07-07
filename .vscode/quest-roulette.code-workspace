@@ -18,7 +18,16 @@
       {
         "label": "All Open Issues",
         "query": "is:open repo:${owner}/${repository} sort:updated-desc"
+      },
+
+      {
+        "label": "All Closed Issues",
+        "query": "is:closed repo:${owner}/${repository} sort:updated-desc"
       }
+
+    ],
+    "githubIssues.ignoreMilestones": [
+
     ]
   }
 }
