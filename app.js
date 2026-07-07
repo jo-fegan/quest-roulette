@@ -721,7 +721,8 @@ function scrollToContent() {
 // Toast notification (uses dark mode aware styles)
 function showToast(message, type = 'info') {
     toast.innerText = message;
-    toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-xl transform transition-all duration-300 z-50 font-medium text-sm flex items-center gap-2 bg-slate-800 dark:bg-white text-white dark:text-slate-900`;
+    toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-xl transform transition-all duration-300 z-50 font-medium text-sm flex items-center gap-2 
+    bg-slate-800 dark:bg-white text-white dark:text-slate-900`;
     
     if (type === 'success') {
         toast.classList.add('bg-green-600', 'text-white');
