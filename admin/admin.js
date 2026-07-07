@@ -690,7 +690,7 @@ window.createActivity = async (data, season) => {
 };
 
 window.markFeedbackDone = async (feedbackId) => {
-    const { error } = await window.supabase.from('feedback_suggestions').update({ status: 'done' }).eq('id', feedbackId);
+    const { error } = await window.supabase.from('feedback_suggestions').update({ status: 'actioned' }).eq('id', feedbackId);
     if (error) throw error;
     await window.refreshFeedback();
 };
