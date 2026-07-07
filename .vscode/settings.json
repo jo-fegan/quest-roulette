@@ -1,20 +1,16 @@
 {
-    "githubIssues.queries": [
-        
-
-
-
-        {
-            "label": "Open Enhancements",
-            "query": "label:enhancement is:open repo:${owner}/${repository}"
-        },
-        {
-            "label": "OpenBugs",
-            "query": "label:bug state:open repo:${owner}/${repository} sort:created-desc"
-        },
-        {
-            "label": "All Open Issues",
-            "query": "state:open repo:${owner}/${repository} sort:updated-desc"
-        }
-    ]
+  "githubIssues.queries": [
+    {
+      "label": "Open Enhancements",
+      "query": "label:enhancement is:open repo:${owner}/${repository}"
+    },
+    {
+      "label": "Open Bugs",
+      "query": "label:bug is:open repo:${owner}/${repository} sort:created-desc"
+    },
+    {
+      "label": "All Open Issues",
+      "query": "is:open repo:${owner}/${repository} sort:updated-desc"
+    }
+  ]
 }

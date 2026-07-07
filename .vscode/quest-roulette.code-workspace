@@ -1,9 +1,24 @@
 {
-	"folders": [
-		{
-			"name": "quest-roulette",
-			"path": ".."
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "name": "quest-roulette",
+      "path": ".."
+    }
+  ],
+  "settings": {
+    "githubIssues.queries": [
+      {
+        "label": "Open Enhancements",
+        "query": "label:enhancement is:open repo:${owner}/${repository}"
+      },
+      {
+        "label": "Open Bugs",
+        "query": "label:bug is:open repo:${owner}/${repository} sort:created-desc"
+      },
+      {
+        "label": "All Open Issues",
+        "query": "is:open repo:${owner}/${repository} sort:updated-desc"
+      }
+    ]
+  }
 }
