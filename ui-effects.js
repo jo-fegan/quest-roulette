@@ -1,6 +1,6 @@
 // --- FALLING LEAVES ANIMATION ---
 function createLeaf() {
-  const leaves = ['🍂','🐊','🌴','🥥','🍍','🥭','🍹','🐠','🌿',🪸','🧜🏼‍♀️','🏖️','🐚','🍃'];
+  const leaves = ['🍂','🐊','🌴','🥥','🍍','🥭','🍹','🐠','🌿','🪸','🧜🏼‍♀️','🏖️','🐚','🍃'];
   const leaf = document.createElement('div');
   leaf.className = 'leaf';
   leaf.textContent = leaves[Math.floor(Math.random() * leaves.length)];

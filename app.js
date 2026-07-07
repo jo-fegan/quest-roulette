@@ -16,6 +16,9 @@ const globalFeedbackBtn = document.getElementById('global-feedback-btn');
 let globalActivities = []; 
 let currentResultData = null; 
 let startTime = Date.now();
+const MIN_LOADING_DISPLAY_MS = 3000;
+let loadingDisplayTimer = null;
+let loadingStartedAt = 0;
 
 // --- FALLING LEAVES ANIMATION FUNCTIONS ---
 let leafSpawnInterval = null;
@@ -36,9 +39,13 @@ function createFallingLeaf() {
   
   leaf.style.left = `${leftPosition}%`;
   leaf.style.top = '-20px';
-  leaf.style.animation = `${animationType} ${duration}s linear ${delay}s`;
+  leaf.style.zIndex = '0';
+  leaf.style.pointerEvents = 'none';
+  leaf.style.willChange = 'transform, opacity';
+  leaf.style.animation = `${animationType} ${duration}s linear ${delay}s forwards`;
   leaf.style.fontSize = `${size}rem`;
   leaf.style.opacity = '0';
+  leaf.setAttribute('aria-hidden', 'true');
   
   return leaf;
 }
@@ -121,6 +128,26 @@ function renderLoading() {
      scrollToContent();
 }
 
+function startLoadingState() {
+    loadingStartedAt = Date.now();
+    clearTimeout(loadingDisplayTimer);
+    renderLoading();
+}
+
+function stopLoadingState(callback) {
+    clearTimeout(loadingDisplayTimer);
+    const elapsed = Date.now() - loadingStartedAt;
+    const remaining = Math.max(0, MIN_LOADING_DISPLAY_MS - elapsed);
+
+    loadingDisplayTimer = setTimeout(() => {
+        stopFallingLeaves('falling-leaves-wrapper');
+        loadingDisplayTimer = null;
+        if (typeof callback === 'function') {
+            callback();
+        }
+    }, remaining);
+}
+
 // UPDATED: Original function handles results only (NO inline feedback button)
 function renderResult(data, relaxedLabels) {
     if(!contentArea) return;
@@ -183,7 +210,7 @@ ${data.latitude && data.longitude ? `
             </div>
         </div>
 
-        <div class="pt-0 px-6 pb-6 space-y-4 mt-[-1rem]"> <!-- Reset top to above image -->
+        <div class="px-6 pb-6 pt-4 space-y-4 mt-0"> <!-- Keep the description panel fully visible beneath the image -->
             <p class="text-lg leading-relaxed bg-white dark:bg-slate-800 text-slate-800 dark:text-teal-600 p-6 rounded-lg shadow-inner border border-slate-100 dark:border-slate-700">${data.description}</p>
 
 
@@ -333,7 +360,7 @@ function startSpin() {
     if(resultArea) resultArea.classList.remove('hidden');
 
     // Show loading with falling leaves in-place
-    renderLoading();
+    startLoadingState();
 
     if(spinBtn) {
         spinBtn.disabled = true;
@@ -457,10 +484,47 @@ function getSelectedPrices() {
     return values;
 }
 
+function updatePriceFilterSummary() {
+    const label = document.getElementById('priceFilterLabel');
+    if (!label) return;
+
+    const selectedPrices = getSelectedPrices();
+    if (selectedPrices.length === 0) {
+        label.textContent = 'Any';
+        return;
+    }
+
+    const displayLabels = selectedPrices.map(value => {
+        if (value === '$') return 'Budget/Free';
+        if (value === '$$') return 'Moderate';
+        if (value === '$$$') return 'Luxury';
+        return value;
+    });
+
+    label.textContent = displayLabels.join(', ');
+}
+
+function togglePriceFilterMenu() {
+    const menu = document.getElementById('priceFilterMenu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+
+function closePriceFilterMenu() {
+    const menu = document.getElementById('priceFilterMenu');
+    if (menu) {
+        menu.classList.add('hidden');
+    }
+}
+
 // PRICE CHECKBOX MUTEX HANDLER - ADDED MISSING FUNCTION
 function handlePriceCheckbox(clickedCheckbox) {
     const checkboxes = document.querySelectorAll('[name="priceOpt"]');
+    const anyCheckbox = document.querySelector('[name="priceOpt"][value="any"]');
     
+    if (!anyCheckbox) return;
+
     if (clickedCheckbox.value === 'any') {
         // If "Any" clicked, deselect all individual options
         checkboxes.forEach(cb => {
@@ -468,7 +532,7 @@ function handlePriceCheckbox(clickedCheckbox) {
         });
     } else {
         // Individual option clicked - deselect "Any"
-        document.querySelector('[value="any"]').checked = false;
+        anyCheckbox.checked = false;
         
         const selectedCount = Array.from(checkboxes).filter(cb => 
             cb.checked && cb.value !== 'any'
@@ -476,39 +540,42 @@ function handlePriceCheckbox(clickedCheckbox) {
         
         // If all 3 selected, auto-check "Any" and deselect individuals
         if (selectedCount >= 3) {
-            document.querySelector('[value="any"]').checked = true;
+            anyCheckbox.checked = true;
             checkboxes.forEach(cb => {
                 if (cb.value !== 'any') cb.checked = false;
             });
         }
     }
+
+    updatePriceFilterSummary();
 }
 
 function finishSpin(matches, relaxedKeys, orderList) {
-    if(!matches || matches.length === 0) {
-        renderNoMatch();
+    stopLoadingState(() => {
+        if(!matches || matches.length === 0) {
+            renderNoMatch();
+        } else {
+            const selected = matches[Math.floor(Math.random() * matches.length)];
+            currentResultData = selected; 
+            
+            const actualRelaxed = relaxedKeys.filter(key => {
+                let userKey = key;
+                if (key === 'level') userKey = 'level';
+                if (key === 'locType') userKey = 'locationType';
+                const originalVal = document.getElementById(userKey)?.value;
+                return originalVal !== 'all';
+            });
+
+            const labels = actualRelaxed.map(k => {
+                const r = orderList.find(x => x.key === k); 
+                return r ? r.label : k;
+            });
+
+            renderResult(selected, labels);
+        }
+
         resetSpinButton();
-    } else {
-        const selected = matches[Math.floor(Math.random() * matches.length)];
-        currentResultData = selected; 
-        
-        const actualRelaxed = relaxedKeys.filter(key => {
-            let userKey = key;
-            if (key === 'level') userKey = 'level';
-            if (key === 'locType') userKey = 'locationType';
-            const originalVal = document.getElementById(userKey)?.value;
-            return originalVal !== 'all';
-        });
-
-        const labels = actualRelaxed.map(k => {
-            const r = orderList.find(x => x.key === k); 
-            return r ? r.label : k;
-        });
-
-        renderResult(selected, labels);
-    }
-
-    resetSpinButton();
+    });
 }
 
 function resetSpinButton() {
@@ -613,6 +680,9 @@ function resetFilters() {
     checkboxes.forEach(cb => {
         cb.checked = (cb.value === 'any');
     });
+
+    updatePriceFilterSummary();
+    closePriceFilterMenu();
     
     showToast("Filters reset.", "info");
 }
@@ -707,4 +777,13 @@ window.handleRating = handleRating;
 window.openFeedbackModal = openFeedbackModal;
 window.closeFeedbackModal = closeFeedbackModal;
 window.resetFilters = resetFilters;
-window.handlePriceCheckbox = handlePriceCheckbox; // ← ADDED EXPORT FOR CHECKBOX HANDLER
+window.handlePriceCheckbox = handlePriceCheckbox;
+window.togglePriceFilterMenu = togglePriceFilterMenu;
+
+updatePriceFilterSummary();
+
+document.addEventListener('click', (event) => {
+    if (!event.target.closest('#priceFilterGroup')) {
+        closePriceFilterMenu();
+    }
+});
