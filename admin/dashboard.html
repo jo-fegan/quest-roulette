@@ -60,53 +60,89 @@
 </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
-        
-        <!-- Controls Bar -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
-            <div class="flex-grow max-w-md">
-                <input type="text" id="searchInput" placeholder="Search titles, areas..." 
-                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
-                       oninput="renderTable()">
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="inline-flex rounded-full bg-slate-100 p-1">
+                <button id="activitiesTabBtn" onclick="showAdminTab('activities')" class="px-4 py-2 rounded-full bg-white text-brand shadow-sm text-sm font-semibold">Activities</button>
+                <button id="feedbackTabBtn" onclick="showAdminTab('feedback')" class="px-4 py-2 rounded-full text-slate-600 hover:text-brand text-sm font-semibold">Feedback</button>
             </div>
-            <div class="flex gap-2">
-                <button onclick="openBulkEditModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    ✏️ Bulk Edit Selected
-                </button>
-                <button onclick="refreshData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    🔄 Refresh
-                </button>
+            <div id="activitiesNote" class="text-sm text-slate-500">Image updates are done directly via Supabase.</div>
+        </div>
+
+        <div id="activitiesTab">
+            <!-- Controls Bar -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex-grow max-w-md">
+                    <input type="text" id="searchInput" placeholder="Search titles, areas..." 
+                           class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
+                           oninput="renderTable()">
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button id="hideInactiveBtn" onclick="toggleHideInactive()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Hide inactive: ON
+                    </button>
+                    <button onclick="openNewActivityModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        ➕ Add Activity
+                    </button>
+                    <button onclick="openBulkEditModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        ✏️ Bulk Edit Selected
+                    </button>
+                    <button onclick="refreshData()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold">
+                        <tr>
+                            <th class="px-4 py-3 w-10"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                            <th class="px-4 py-3"><button type="button" onclick="setSort('dbId')" class="text-left w-full text-slate-600 hover:text-brand">Activity ID</button></th>
+                            <th class="px-4 py-3"><button type="button" onclick="setSort('title')" class="text-left w-full text-slate-600 hover:text-brand">Title</button></th>
+                            <th class="px-4 py-3"><button type="button" onclick="setSort('area')" class="text-left w-full text-slate-600 hover:text-brand">Area</button></th>
+                            <th class="px-4 py-3"><button type="button" onclick="setSort('price')" class="text-left w-full text-slate-600 hover:text-brand">Price</button></th>
+                            <th class="px-4 py-3">Details</th>
+                            <th class="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody" class="divide-y divide-slate-100 text-sm">
+                        <!-- Rows injected by JS -->
+                        <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">Loading...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Data Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold">
-                    <tr>
-                        <th class="px-4 py-3 w-10"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                        <th class="px-4 py-3">Title</th>
-                        <th class="px-4 py-3">Area</th>
-                        <th class="px-4 py-3">Price</th>
-                        <th class="px-4 py-3">Details</th>
-                        <th class="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="activityTableBody" class="divide-y divide-slate-100 text-sm">
-                    <!-- Rows injected by JS -->
-                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Loading...</td></tr>
-                </tbody>
-            </table>
+        <div id="feedbackTab" class="hidden">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">Feedback</h2>
+                    <p class="text-sm text-slate-500">Default view shows pending feedback first. Activity feedback is grouped by activity ID.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label for="feedbackStatusFilter" class="text-sm text-slate-600">Status</label>
+                    <select id="feedbackStatusFilter" onchange="refreshFeedback()" class="w-full max-w-xs px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                        <option value="pending">Pending only</option>
+                        <option value="all">All feedback</option>
+                    </select>
+                </div>
+            </div>
+            <div id="feedbackContent" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 min-h-[220px]">
+                <div class="text-slate-500">Loading feedback...</div>
+            </div>
         </div>
     </main>
 
     <!-- Edit Modal (Single & Bulk) -->
-    <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 m-4">
-            <h2 id="modalTitle" class="text-xl font-bold mb-4 text-slate-800">Edit Activity</h2>
-            <div id="modalContent" class="space-y-4">
-                <!-- Dynamic Form Fields -->
+    <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 px-4 py-8">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl p-6 m-4 overflow-y-auto max-h-[90vh]">
+            <div class="flex items-start justify-between gap-4">
+                <h2 id="modalTitle" class="text-xl font-bold text-slate-800">Edit Activity</h2>
+                <button onclick="closeModal()" aria-label="Close" class="text-slate-400 hover:text-slate-700">✕</button>
             </div>
-            <div class="flex justify-end gap-3 mt-6">
+            <div id="modalContent" class="space-y-6"></div>
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mt-6">
                 <button onclick="closeModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
                 <button onclick="saveChanges()" id="saveBtn" class="px-4 py-2 bg-brand text-white rounded-lg hover:bg-indigo-700">Save Changes</button>
             </div>
@@ -379,12 +415,12 @@
             // Auth passed, load data
             console.log("Auth passed. Loading data...");
             await refreshData();
+            showAdminTab('activities');
         }
 
         // Start app when DOM is ready
         document.addEventListener('DOMContentLoaded', init);
     </script>
-    -->
 
 <script>
     // Theme (Dark mode) Toggling Logic
